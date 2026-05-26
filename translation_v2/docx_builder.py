@@ -62,13 +62,10 @@ def _is_solution_label(line: str) -> bool:
     return stripped.lower() in ('solution:', 'solution')
 
 
-def _is_language_label(line: str) -> bool:
+def _is_language_label(line: str, language: str) -> bool:
     """Check if line is a language label like 'Hindi:', 'Tamil:', etc."""
-    return bool(re.match(
-        r'^(Hindi|Tamil|Telugu|Kannada|Malayalam|Marathi|Bengali|Gujarati|'
-        r'Punjabi|Urdu|Odia|Assamese)\s*:\s*$',
-        line.strip(), re.IGNORECASE
-    ))
+    pattern = rf'^{re.escape(language)}\s*:\s*$'
+    return bool(re.match(pattern, line.strip(), re.IGNORECASE))
 
 
 def _is_option_line(line: str) -> bool:
@@ -137,7 +134,7 @@ def build(batch_outputs: list, output_path: str, language: str):
                 continue
 
             # ── Language label (e.g., "Hindi:") ─────────────────────
-            if _is_language_label(line):
+            if _is_language_label(line, language):
                 _add_line(doc, line, size=11, bold=True, italic=True,
                           space_before=6, space_after=2,
                           color=RGBColor(180, 80, 0))
