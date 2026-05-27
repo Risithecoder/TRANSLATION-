@@ -32,7 +32,7 @@ JOBS_FOLDER = os.path.join(os.getcwd(), "jobs")
 os.makedirs(JOBS_FOLDER, exist_ok=True)
 
 # Default batch size for auto-batching questions before translation
-DEFAULT_BATCH_SIZE = 5
+DEFAULT_BATCH_SIZE = 3
 
 # ── In-memory thread result store ────────────────────────────────────────────
 thread_results: dict = {}
