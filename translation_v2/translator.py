@@ -43,6 +43,13 @@ class TranslatedQuestion(BaseModel):
             raise ValueError(f"answer_key must be a digit string, got: {repr(v)}")
         return cleaned
 
+    @field_validator("translated_question")
+    @classmethod
+    def remove_leading_number(cls, v: str) -> str:
+        cleaned = v.strip()
+        # Remove leading number like "1. ", "23.", etc.
+        return re.sub(r"^\d+\.\s*", "", cleaned)
+
     @field_validator("english_question", "translated_question",
                      "english_solution", "translated_solution")
     @classmethod
@@ -75,7 +82,7 @@ OUTPUT FORMAT: You MUST return a valid JSON object matching exactly this schema:
     {
       "question_no": <integer — the question number>,
       "english_question": "<Full question text in English including question number, e.g. '1. What is...' — preserve ALL internal items A./B./C./I./II. verbatim>",
-      "translated_question": "<Full translated question text in {language} — preserve ALL internal labels verbatim>",
+      "translated_question": "<Full translated question text in {language} WITHOUT the question number — preserve ALL internal labels verbatim>",
       "english_options": ["(1) <option1>", "(2) <option2>", "(3) <option3>", "(4) <option4>"],
       "translated_options": ["(5) <trans1>", "(6) <trans2>", "(7) <trans3>", "(8) <trans4>"],
       "answer_key": "<digit only, e.g. 2>",
@@ -105,7 +112,7 @@ These are PART OF THE QUESTION BODY — they are NOT answer options. Preserve th
 MANDATORY: Return a JSON object with a "questions" array. Each element must have ALL of these keys:
   - question_no (integer)
   - english_question (string)
-  - translated_question (string)
+  - translated_question (string, MUST NOT start with the question number)
   - english_options (array of exactly 4 strings: "(1) ...", "(2) ...", "(3) ...", "(4) ...")
   - translated_options (array of exactly 4 strings: "(5) ...", "(6) ...", "(7) ...", "(8) ...")
   - answer_key (string, digit only)
@@ -129,7 +136,7 @@ EXAMPLE OUTPUT (for {language}=Hindi):
     {{
       "question_no": 1,
       "english_question": "1. What is the capital of India?",
-      "translated_question": "1. भारत की राजधानी क्या है?",
+      "translated_question": "भारत की राजधानी क्या है?",
       "english_options": ["(1) Mumbai", "(2) New Delhi", "(3) Chennai", "(4) Kolkata"],
       "translated_options": ["(5) मुंबई", "(6) नई दिल्ली", "(7) चेन्नई", "(8) कोलकाता"],
       "answer_key": "2",
