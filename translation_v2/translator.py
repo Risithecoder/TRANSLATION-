@@ -9,7 +9,7 @@ from google.genai import types
 
 # ── Gemini setup ──────────────────────────────────────────────────────────────
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
-MODEL  = "gemini-2.5-pro"
+MODEL  = "gemini-3.1-pro"
 
 
 # ═════════════════════════════════════════════════════════════════════════════
