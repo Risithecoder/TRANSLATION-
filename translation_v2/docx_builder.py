@@ -110,7 +110,7 @@ def build(batch_outputs: list, output_path: str, language: str):
             # ── Question number line ────────────────────────────────
             if _is_question_number(line):
                 if not first_question:
-                    _add_separator(doc)
+                    pass # _add_separator(doc)
                 first_question = False
                 _add_line(doc, line, size=12, bold=True,
                           space_before=16, space_after=4)
