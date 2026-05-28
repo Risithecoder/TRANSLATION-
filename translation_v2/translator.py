@@ -196,7 +196,15 @@ def _render_batch_to_text(batch: TranslationBatch, language: str) -> str:
     blocks = []
     for q in batch.questions:
         lines = []
-        lines.append(q.english_question)
+        
+        # Enforce question number prefix on english_question
+        eq = q.english_question.strip()
+        if not re.match(r'^\d+\.', eq):
+            eq = f"{q.question_no}. {eq}"
+        else:
+            eq = re.sub(r'^\d+\.', f"{q.question_no}.", eq, count=1)
+            
+        lines.append(eq)
         lines.append(f"{language}:")
         lines.append(q.translated_question)
         lines.extend(q.english_options)
