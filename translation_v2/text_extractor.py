@@ -263,7 +263,7 @@ def _deduplicate(questions: list) -> list:
     """
     seen = set()
     unique = []
-    fallback_counter = 0
+    last_q_no = 0
     for q in questions:
         # Normalize: strip whitespace for comparison
         norm = re.sub(r"\s+", "", q.get("raw_text", ""))
@@ -271,11 +271,25 @@ def _deduplicate(questions: list) -> list:
             continue
         if norm not in seen:
             seen.add(norm)
-            # Preserve original question_no; only assign sequential fallback
-            # when the LLM returned 0 (couldn't detect the number)
-            if not q.get("question_no"):
-                fallback_counter += 1
-                q["question_no"] = fallback_counter
+            
+            q_no = q.get("question_no")
+            
+            # If LLM failed to extract a number (0 or None), 
+            # fallback to the last known number + 1
+            if not q_no:
+                q_no = last_q_no + 1
+                q["question_no"] = q_no
+            
+            # Ensure it's an int and update our running counter
+            try:
+                q_no_int = int(q_no)
+                if q_no_int > last_q_no:
+                    last_q_no = q_no_int
+                # If we suddenly get a number lower than expected (e.g. LLM hallucinates 1), 
+                # we don't bring last_q_no down, we just accept the extracted number.
+            except (ValueError, TypeError):
+                pass
+                
             unique.append(q)
     return unique
 
