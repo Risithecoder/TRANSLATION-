@@ -30,9 +30,17 @@ def _html_to_plain_text(html_content: str) -> str:
     """
     Convert raw HTML to clean plain text.
     Tables → markdown tables. Lists → bullet items. Tags stripped.
-    This reduces token count significantly before sending to the LLM.
+    Preserves internal line breaks from DOCX (soft returns / <br> tags).
+    Also splits labeled items (A. B. C.) that appear on a single line.
     """
     from bs4 import BeautifulSoup
+
+    # ── Step 1: Pre-process raw HTML to preserve <br> line breaks ──────────
+    # Replace ALL <br> variants at string level before BeautifulSoup parsing.
+    # This is more reliable than el.find_all("br") which can miss self-closing
+    # tag variants depending on the parser.
+    html_content = re.sub(r'<br\s*/?\s*>', '\n', html_content, flags=re.IGNORECASE)
+
     soup = BeautifulSoup(html_content, "html.parser")
     parts = []
 
@@ -55,15 +63,37 @@ def _html_to_plain_text(html_content: str) -> str:
                 if t:
                     parts.append(t)
         else:
-            # Replace <br> tags with newlines BEFORE stripping text,
-            # so internal items (A. B. C. on separate lines in DOCX) are preserved.
-            for br in el.find_all("br"):
-                br.replace_with("\n")
             text = el.get_text(strip=False).strip()
             if text:
                 parts.append(text)
 
-    return "\n".join(parts)
+    plain = "\n".join(parts)
+
+    # ── Step 2: Split internal labeled items crammed onto one line ─────────
+    # Many DOCXs put "A. Item1 B. Item2 C. Item3" on one line with no breaks.
+    # Detect lines with 2+ single-letter labels and split them.
+    plain = _split_internal_labels(plain)
+
+    return plain
+
+
+def _split_internal_labels(text: str) -> str:
+    """
+    Split lines that contain multiple internal labels (A. B. C. etc.)
+    onto separate lines. Only activates when 2+ labels are found on the
+    same line, so normal text like 'Section A. Introduction' is untouched.
+    """
+    lines = text.split('\n')
+    result = []
+    for line in lines:
+        # Count single-letter labels A-Z followed by ". " in this line
+        labels = re.findall(r'\b[A-Z]\.\s', line)
+        if len(labels) >= 2:
+            # Insert a newline before each label that appears mid-line
+            # (i.e., preceded by non-whitespace text)
+            line = re.sub(r'(?<=\S)\s+([A-Z]\.\s)', r'\n\1', line)
+        result.append(line)
+    return '\n'.join(result)
 
 
 # ═════════════════════════════════════════════════════════════════════════════
