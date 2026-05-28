@@ -258,9 +258,12 @@ def _extract_chunk(chunk: str, chunk_idx: int, total_chunks: int,
 # ═════════════════════════════════════════════════════════════════════════════
 
 def _deduplicate(questions: list) -> list:
-    """Remove duplicate questions based on normalized text content."""
+    """Remove duplicate questions based on normalized text content.
+    Preserves the original document question numbers extracted by the LLM.
+    """
     seen = set()
     unique = []
+    fallback_counter = 0
     for q in questions:
         # Normalize: strip whitespace for comparison
         norm = re.sub(r"\s+", "", q.get("raw_text", ""))
@@ -268,10 +271,12 @@ def _deduplicate(questions: list) -> list:
             continue
         if norm not in seen:
             seen.add(norm)
+            # Preserve original question_no; only assign sequential fallback
+            # when the LLM returned 0 (couldn't detect the number)
+            if not q.get("question_no"):
+                fallback_counter += 1
+                q["question_no"] = fallback_counter
             unique.append(q)
-    # Re-number sequentially
-    for i, q in enumerate(unique, 1):
-        q["question_no"] = i
     return unique
 
 
