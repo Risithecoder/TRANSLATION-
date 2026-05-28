@@ -318,10 +318,10 @@ def translate_batch(questions: list, language: str, max_retries: int = 3) -> str
                     f"got {len(batch.questions)}. Some questions are missing."
                 )
 
-            # ── Step 4: Render to flat text ───────────────────────────────────
+            # ── Step 4: Return structured data ────────────────────────────────
             print(f"[translator] ✅ Batch validated — "
                   f"{len(batch.questions)} question(s) OK")
-            return _render_batch_to_text(batch, language)
+            return batch.model_dump()
 
         except (ValidationError, ValueError, json.JSONDecodeError) as e:
             last_error = str(e)
@@ -344,4 +344,4 @@ def translate_batch(questions: list, language: str, max_retries: int = 3) -> str
                     f"Translation batch failed after {max_retries} attempts: {last_error}"
                 )
 
-    return ""
+    return {}

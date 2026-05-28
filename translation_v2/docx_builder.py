@@ -159,12 +159,39 @@ def _add_markdown_table(doc, table_lines: list):
             _set_cell_border(cell)
 
 
+def _render_text_block(doc, text: str, size=11, bold=False, italic=False, color=None, space_before=2, space_after=2, indent=False):
+    """Render a block of text that might contain markdown tables."""
+    if not text:
+        return
+    lines = text.split('\n')
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        if not line:
+            i += 1
+            continue
+            
+        # ── Markdown table block ─────────────────────────────────
+        if _is_table_row(line):
+            table_lines = []
+            while i < len(lines) and (_is_table_row(lines[i].strip()) or _is_separator_row(lines[i].strip())):
+                table_lines.append(lines[i].strip())
+                i += 1
+            _add_markdown_table(doc, table_lines)
+            doc.add_paragraph()  # spacing after table
+            continue
+            
+        _add_line(doc, line, size=size, bold=bold, italic=italic, color=color, 
+                  space_before=space_before, space_after=space_after, indent=indent)
+        i += 1
+
+
 def build(batch_outputs: list, output_path: str, language: str):
     """
-    Build a formatted .docx file from batch translation outputs.
+    Build a formatted .docx file from structured batch translation outputs.
 
     Args:
-        batch_outputs (list): List of raw text strings, one per batch.
+        batch_outputs (list): List of structured batch dicts (from Pydantic dump).
         output_path (str): Full path to save the output .docx file.
         language (str): Target language name.
     """
@@ -178,76 +205,56 @@ def build(batch_outputs: list, output_path: str, language: str):
 
     first_question = True
 
-    for batch_text in batch_outputs:
-        if not batch_text:
+    for batch_dict in batch_outputs:
+        if not batch_dict:
             continue
-
-        lines = batch_text.split("\n")
-        i = 0
-
-        while i < len(lines):
-            line = lines[i].strip()
-
-            # Skip completely empty lines (we handle spacing ourselves)
-            if not line:
-                i += 1
-                continue
-
-            # ── Markdown table block ─────────────────────────────────
-            if _is_table_row(line):
-                # Collect all consecutive table rows
-                table_lines = []
-                while i < len(lines) and (_is_table_row(lines[i].strip()) or _is_separator_row(lines[i].strip())):
-                    table_lines.append(lines[i].strip())
-                    i += 1
-                _add_markdown_table(doc, table_lines)
-                doc.add_paragraph()  # spacing after table
-                continue
-
-            # ── Question number line ────────────────────────────────
-            if _is_question_number(line):
-                if not first_question:
-                    pass  # _add_separator(doc)
-                first_question = False
-                _add_line(doc, line, size=12, bold=True,
-                          space_before=16, space_after=4)
-                i += 1
-                continue
-
-            # ── Answer Key line ─────────────────────────────────────
-            if _is_answer_key(line):
-                _add_line(doc, line, size=11, bold=True,
-                          space_before=8, space_after=4,
-                          color=RGBColor(0, 120, 60))
-                i += 1
-                continue
-
-            # ── Solution label ──────────────────────────────────────
-            if _is_solution_label(line):
-                _add_line(doc, line, size=11, bold=True,
-                          space_before=8, space_after=2,
-                          color=RGBColor(0, 90, 160))
-                i += 1
-                continue
-
-            # ── Language label (e.g., "Hindi:") ─────────────────────
-            if _is_language_label(line, language):
-                _add_line(doc, line, size=11, bold=True, italic=True,
-                          space_before=6, space_after=2,
-                          color=RGBColor(180, 80, 0))
-                i += 1
-                continue
-
-            # ── Option lines ────────────────────────────────────────
-            if _is_option_line(line):
-                _add_line(doc, line, size=11, space_before=1,
-                          space_after=1, indent=True)
-                i += 1
-                continue
-
-            # ── Regular content line ────────────────────────────────
-            _add_line(doc, line, size=11, space_before=2, space_after=2)
-            i += 1
+            
+        questions = batch_dict.get('questions', [])
+        for q in questions:
+            if not first_question:
+                pass  # _add_separator(doc)
+            first_question = False
+            
+            # 1. Question Number and English Question
+            eq = str(q.get('english_question', '')).strip()
+            q_no = str(q.get('question_no', ''))
+            
+            # Enforce question number prefix if missing
+            if q_no and not re.match(r'^\d+\.', eq):
+                eq = f"{q_no}. {eq}"
+            elif q_no:
+                eq = re.sub(r'^\d+\.', f"{q_no}.", eq, count=1)
+                
+            _render_text_block(doc, eq, size=12, bold=True, space_before=16, space_after=4)
+            
+            # 2. Language label
+            _add_line(doc, f"{language}:", size=11, bold=True, italic=True, 
+                      space_before=6, space_after=2, color=RGBColor(180, 80, 0))
+            
+            # 3. Translated Question
+            _render_text_block(doc, str(q.get('translated_question', '')), size=11)
+            
+            # 4. English Options
+            for opt in q.get('english_options', []):
+                _render_text_block(doc, str(opt), size=11, space_before=1, space_after=1, indent=True)
+                
+            # 5. Translated Options
+            for opt in q.get('translated_options', []):
+                _render_text_block(doc, str(opt), size=11, space_before=1, space_after=1, indent=True)
+                
+            # 6. Answer Key
+            _add_line(doc, f"Answer Key: {q.get('answer_key', '')}", size=11, bold=True, 
+                      space_before=8, space_after=4, color=RGBColor(0, 120, 60))
+            
+            # 7. English Solution
+            _add_line(doc, "Solution:", size=11, bold=True, 
+                      space_before=8, space_after=2, color=RGBColor(0, 90, 160))
+            _render_text_block(doc, str(q.get('english_solution', '')), size=11)
+            
+            # 8. Translated Solution
+            _add_line(doc, f"{language}:", size=11, bold=True, italic=True, 
+                      space_before=6, space_after=2, color=RGBColor(180, 80, 0))
+            _render_text_block(doc, str(q.get('translated_solution', '')), size=11)
 
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     doc.save(output_path)
