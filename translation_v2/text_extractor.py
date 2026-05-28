@@ -55,7 +55,11 @@ def _html_to_plain_text(html_content: str) -> str:
                 if t:
                     parts.append(t)
         else:
-            text = el.get_text(strip=True)
+            # Replace <br> tags with newlines BEFORE stripping text,
+            # so internal items (A. B. C. on separate lines in DOCX) are preserved.
+            for br in el.find_all("br"):
+                br.replace_with("\n")
+            text = el.get_text(strip=False).strip()
             if text:
                 parts.append(text)
 
