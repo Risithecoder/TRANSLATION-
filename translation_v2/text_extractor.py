@@ -202,8 +202,8 @@ You must OUTPUT this as:
 
 Similarly for Match the Following:
 BAD: "List-I List-II a. Item1 i. Match1 b. Item2 ii. Match2"
-GOOD (restored):
-"List-I         List-II\\na. Item1       i. Match1\\nb. Item2       ii. Match2"
+GOOD (restored as a markdown table):
+"| List-I | List-II |\\n|---|---|\\n| a. Item1 | i. Match1 |\\n| b. Item2 | ii. Match2 |"
 
 RULES:
 - Do NOT rephrase, restructure content, or change wording. Only restore line breaks where items were collapsed.

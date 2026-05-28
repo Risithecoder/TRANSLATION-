@@ -127,6 +127,9 @@ MANDATORY: Return a JSON object with a "questions" array. Each element must have
   - english_solution (string — MUST NOT be empty)
   - translated_solution (string — MUST NOT be empty)
 
+CRITICAL RULE FOR TABLES:
+If the english_question contains a markdown table (e.g. for "Match the Following"), you MUST preserve the EXACT SAME markdown table structure (using | and |---|) in both the english_question and translated_question, translating only the text inside the cells.
+
 ────────────────────────────────────────────────────────────────────────────────
 EXAMPLE INPUT:
 1. What is the capital of India?
