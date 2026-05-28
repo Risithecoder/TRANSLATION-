@@ -81,8 +81,8 @@ OUTPUT FORMAT: You MUST return a valid JSON object matching exactly this schema:
   "questions": [
     {
       "question_no": <integer — the question number>,
-      "english_question": "<Full question text in English including question number, e.g. '1. What is...' — preserve ALL internal items A./B./C./I./II. verbatim>",
-      "translated_question": "<Full translated question text in {language} WITHOUT the question number — preserve ALL internal labels verbatim>",
+      "english_question": "<ONLY the question stem: the line starting with the question number and the actual question sentence. Do NOT include any un-numbered body statements that are later repeated as options (1)-(4).>",
+      "translated_question": "<ONLY the translated question stem, WITHOUT the question number and WITHOUT any un-numbered statements that are later repeated as translated options (5)-(8).>",
       "english_options": ["(1) <option1>", "(2) <option2>", "(3) <option3>", "(4) <option4>"],
       "translated_options": ["(5) <trans1>", "(6) <trans2>", "(7) <trans3>", "(8) <trans4>"],
       "answer_key": "<digit only, e.g. 2>",
@@ -100,6 +100,7 @@ ABSOLUTE RULES:
 5. english_solution and translated_solution must NEVER be empty strings.
 6. Translate or transliterate ALL English words into {language} script in translated fields. No English letters except preserved labels (A., B., Roman numerals, symbols, units, dates, codes).
 7. Do NOT alter equations, formulas, symbols, units, dates, codes, or placeholders.
+8. QUESTION STEM RULE: Some exam questions list their options in un-numbered form inside the question body BEFORE the numbered options (1)-(4). In such cases, put ONLY the actual question sentence (e.g. '11. What is Exploratory Research?') in english_question. The un-numbered body statements are already captured in english_options — do NOT duplicate them in english_question or translated_question.
 """
 
 PROMPT_TEMPLATE = """Translate the following batch of examination questions into {language}.
@@ -109,10 +110,17 @@ Many government exam questions contain internal statements labelled with letters
   A., B., C., D.  or  I., II., III.  or  1., 2., 3.  (internal items in question body)
 These are PART OF THE QUESTION BODY — they are NOT answer options. Preserve them verbatim.
 
+IMPORTANT — QUESTION STEM vs OPTIONS:
+Some exam questions list their MCQ choices in un-numbered form inside the question body, BEFORE the numbered options (1)-(4). In that case:
+  - english_question must contain ONLY the actual question sentence (e.g. '11. What is X?').
+  - Do NOT copy those un-numbered body statements into english_question.
+  - Those statements will appear as the proper numbered options (1)-(4) — no duplication.
+  - translated_question must ONLY contain the translated question sentence (no number, no repeated body items).
+
 MANDATORY: Return a JSON object with a "questions" array. Each element must have ALL of these keys:
   - question_no (integer)
-  - english_question (string)
-  - translated_question (string, MUST NOT start with the question number)
+  - english_question (string, ONLY the question stem — no duplicated option text)
+  - translated_question (string, ONLY the translated stem — MUST NOT start with the question number)
   - english_options (array of exactly 4 strings: "(1) ...", "(2) ...", "(3) ...", "(4) ...")
   - translated_options (array of exactly 4 strings: "(5) ...", "(6) ...", "(7) ...", "(8) ...")
   - answer_key (string, digit only)
