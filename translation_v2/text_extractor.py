@@ -290,6 +290,15 @@ def _deduplicate(questions: list) -> list:
             except (ValueError, TypeError):
                 pass
                 
+            # Enforce the question number prefix on the raw_text so it appears in the UI
+            raw = str(q.get("raw_text", "")).strip()
+            if not re.match(r'^\d+\.', raw):
+                # E.g. "What is..." -> "46. What is..."
+                q["raw_text"] = f"{q['question_no']}. {raw}"
+            else:
+                # Force the prefix to exactly match the extracted/assigned question_no
+                q["raw_text"] = re.sub(r'^\d+\.', f"{q['question_no']}.", raw, count=1)
+                
             unique.append(q)
     return unique
 
