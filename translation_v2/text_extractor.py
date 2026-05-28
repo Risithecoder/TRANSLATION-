@@ -178,16 +178,36 @@ Do NOT extract questions that are cut off at the start or end.
 
 For each question, return:
 1. question_no: the question number as it appears in the document (integer). If no number is visible, assign sequential numbers starting from 1.
-2. raw_text: the COMPLETE verbatim text of the question. You MUST include ALL of the following if present:
+2. raw_text: the COMPLETE text of the question with PROPER FORMATTING. You MUST include ALL of the following if present:
    - Question stem / passage / context
    - All options (A/B/C/D or 1/2/3/4 etc.)
    - Answer Key line
    - Solution / Explanation
-   Use \\n for line breaks. Do NOT add or remove any content.
+   Use \\n for line breaks.
+
+CRITICAL FORMATTING RESTORATION RULE:
+The input text may have lost its line breaks during document conversion, causing items to appear crammed on a single line. You MUST detect and restore proper formatting by placing each structural item on its OWN LINE. This includes but is not limited to:
+   - Labeled items: A. B. C. D. E. or a. b. c. d. or (a) (b) (c) (d)
+   - Roman numerals: I. II. III. IV. or (i) (ii) (iii) (iv)
+   - Match the Following columns: List-I / List-II pairs, each pair on its own line
+   - Numbered sub-items within question body: 1. 2. 3. 4. (when they are part of the question stem, NOT the MCQ options)
+   - Option groups: (1) (2) (3) (4) — each on its own line
+   - Any tabular or columnar data that has been flattened into one line
+
+Example of BAD input (collapsed):
+"A. Loans and Advances B. Cash Reserve Ratio C. Open Market Operations D. Statutory Liquidity Ratio"
+
+You must OUTPUT this as:
+"A. Loans and Advances\\nB. Cash Reserve Ratio\\nC. Open Market Operations\\nD. Statutory Liquidity Ratio"
+
+Similarly for Match the Following:
+BAD: "List-I List-II a. Item1 i. Match1 b. Item2 ii. Match2"
+GOOD (restored):
+"List-I         List-II\\na. Item1       i. Match1\\nb. Item2       ii. Match2"
 
 RULES:
-- Copy text EXACTLY as it appears. Do not rephrase, restructure, or summarize.
-- Preserve all numbering, labels, formatting, and mathematical expressions.
+- Do NOT rephrase, restructure content, or change wording. Only restore line breaks where items were collapsed.
+- Preserve all numbering, labels, formatting, and mathematical expressions exactly.
 - If a passage/table/chart appears before a group of questions and applies to all of them, include it ONLY in the first question's raw_text.
 - Do NOT repeat shared passages/tables in subsequent questions of the same group.
 
