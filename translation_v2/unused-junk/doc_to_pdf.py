@@ -2,7 +2,6 @@ import os
 import subprocess
 import shutil
 
-
 def convert(input_path: str, output_pdf_path: str):
     """
     Convert a .docx or .html/.htm file to PDF.

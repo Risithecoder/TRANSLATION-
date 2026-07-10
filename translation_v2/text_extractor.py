@@ -15,16 +15,34 @@ import os
 import re
 import json
 import time
-from openai import OpenAI
+from google import genai
+from google.genai import types
 
-# ── OpenAI setup ─────────────────────────────────────────────────────────────
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-MODEL = "gpt-4o-mini"
+# ── Gemini setup ─────────────────────────────────────────────────────────────
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+MODEL = "gemini-2.5-pro"
 
 
 # ═════════════════════════════════════════════════════════════════════════════
 # STEP 1: HTML → Clean Plain Text
 # ═════════════════════════════════════════════════════════════════════════════
+
+UNICODE_SUP = {
+    '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
+    '⁺': '+', '⁻': '-', '⁼': '=', '⁽': '(', '⁾': ')', 'ⁿ': 'n', 'ⁱ': 'i', 'ᵃ': 'a', 'ᵇ': 'b', 'ᶜ': 'c',
+    'ᵈ': 'd', 'ᵉ': 'e', 'ᶠ': 'f', 'ᵍ': 'g', 'ʰ': 'h', 'ʲ': 'j', 'ᵏ': 'k', 'ˡ': 'l', 'ᵐ': 'm', 'ᵒ': 'o',
+    'ᵖ': 'p', 'ʳ': 'r', 'ˢ': 's', 'ᵗ': 't', 'ᵘ': 'u', 'ᵛ': 'v', 'ʷ': 'w', 'ˣ': 'x', 'ʸ': 'y', 'ᶻ': 'z',
+    'ᴬ': 'A', 'ᴮ': 'B', 'ᴰ': 'D', 'ᴱ': 'E', 'ᴳ': 'G', 'ᴴ': 'H', 'ᴵ': 'I', 'ᴶ': 'J', 'ᴷ': 'K', 'ᴸ': 'L',
+    'ᴹ': 'M', 'ᴺ': 'N', 'ᴼ': 'O', 'ᴾ': 'P', 'ᴿ': 'R', 'ᵀ': 'T', 'ᵁ': 'U', 'ⱽ': 'V', 'ᵂ': 'W'
+}
+
+UNICODE_SUB = {
+    '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4', '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9',
+    '₊': '+', '₋': '-', '₌': '=', '₍': '(', '₎': ')', 'ₐ': 'a', 'ₑ': 'e', 'ₕ': 'h', 'ᵢ': 'i', 'ⱼ': 'j',
+    'ₖ': 'k', 'ₗ': 'l', 'ₘ': 'm', 'ₙ': 'n', 'ₒ': 'o', 'ₚ': 'p', 'ᵣ': 'r', 'ₛ': 's', 'ₜ': 't', 'ᵤ': 'u',
+    'ᵥ': 'v', 'ₓ': 'x'
+}
+
 
 def _html_to_plain_text(html_content: str) -> str:
     """
@@ -35,6 +53,12 @@ def _html_to_plain_text(html_content: str) -> str:
     """
     from bs4 import BeautifulSoup
 
+    # Convert Unicode superscript/subscript characters to HTML tags
+    for char, replacement in UNICODE_SUP.items():
+        html_content = html_content.replace(char, f"<sup>{replacement}</sup>")
+    for char, replacement in UNICODE_SUB.items():
+        html_content = html_content.replace(char, f"<sub>{replacement}</sub>")
+
     # ── Step 1: Pre-process raw HTML to preserve <br> line breaks ──────────
     # Replace ALL <br> variants at string level before BeautifulSoup parsing.
     # This is more reliable than el.find_all("br") which can miss self-closing
@@ -42,6 +66,28 @@ def _html_to_plain_text(html_content: str) -> str:
     html_content = re.sub(r'<br\s*/?\s*>', '\n', html_content, flags=re.IGNORECASE)
 
     soup = BeautifulSoup(html_content, "html.parser")
+    
+    # ── Replace bold/strong and u tags with markdown-style markers ─────────
+    for tag in soup.find_all(['strong', 'b']):
+        tag.insert_before("**")
+        tag.insert_after("**")
+        tag.unwrap()
+        
+    for tag in soup.find_all('u'):
+        tag.insert_before("__")
+        tag.insert_after("__")
+        tag.unwrap()
+
+    for tag in soup.find_all('sup'):
+        tag.insert_before("<sup>")
+        tag.insert_after("</sup>")
+        tag.unwrap()
+
+    for tag in soup.find_all('sub'):
+        tag.insert_before("<sub>")
+        tag.insert_after("</sub>")
+        tag.unwrap()
+
     parts = []
 
     for el in soup.children:
@@ -50,18 +96,40 @@ def _html_to_plain_text(html_content: str) -> str:
         if el.name == "table":
             rows = el.find_all("tr")
             md_rows = []
-            for row_idx, row in enumerate(rows):
+            # Track max columns so separator always matches
+            max_cols = 0
+            raw_row_cells = []
+            for row in rows:
                 cells = row.find_all(["td", "th"])
-                cell_texts = [c.get_text(strip=True) for c in cells]
-                md_rows.append("| " + " | ".join(cell_texts) + " |")
+                expanded = []
+                for c in cells:
+                    text = c.get_text(strip=True)
+                    try:
+                        span = int(c.get("colspan", 1))
+                    except (ValueError, TypeError):
+                        span = 1
+                    expanded.append(text)
+                    # Fill extra columns caused by colspan with empty strings
+                    for _ in range(span - 1):
+                        expanded.append("")
+                raw_row_cells.append(expanded)
+                if len(expanded) > max_cols:
+                    max_cols = len(expanded)
+            for row_idx, cols in enumerate(raw_row_cells):
+                # Pad rows that are shorter than max_cols
+                while len(cols) < max_cols:
+                    cols.append("")
+                md_rows.append("| " + " | ".join(cols) + " |")
                 if row_idx == 0:
-                    md_rows.append("|" + "|".join(["---"] * len(cell_texts)) + "|")
+                    md_rows.append("|" + "|".join(["---"] * max_cols) + "|")
             parts.append("\n".join(md_rows))
         elif el.name in ("ol", "ul"):
-            for li in el.find_all("li", recursive=False):
+            is_ordered = (el.name == "ol")
+            for idx, li in enumerate(el.find_all("li", recursive=False), start=1):
                 t = li.get_text(strip=True)
                 if t:
-                    parts.append(t)
+                    prefix = f"{idx}. " if is_ordered else "- "
+                    parts.append(prefix + t)
         else:
             text = el.get_text(strip=False).strip()
             if text:
@@ -171,78 +239,153 @@ def _smart_chunk(plain_text: str, max_chunk_chars: int = 30000) -> list:
 # STEP 3: LLM Extraction — GPT-4o-mini
 # ═════════════════════════════════════════════════════════════════════════════
 
-EXTRACTION_PROMPT = """You are reading a segment of plain text extracted from an Indian competitive exam question paper.
+EXTRACTION_PROMPT = """You are an expert document parser. Your ONLY task is to segment the provided text into logical items (questions, passages, directions, context).
 
-Extract every COMPLETE question that is fully contained in this text.
-Do NOT extract questions that are cut off at the start or end.
+ABSOLUTE RULES:
+1. DO NOT OMIT, DROP, OR IGNORE ANY TEXT. Every single word from the input MUST appear in one of the extracted items.
+2. If the text contains a passage, directions, or notes before the questions, you MUST create a separate item for it.
+3. DO NOT SUMMARIZE. Copy the text exactly.
 
-For each question, return:
-1. question_no: the question number as it appears in the document (integer). If no number is visible, assign sequential numbers starting from 1.
-2. raw_text: the COMPLETE text of the question with PROPER FORMATTING. You MUST include ALL of the following if present:
-   - Question stem / passage / context
-   - All options (A/B/C/D or 1/2/3/4 etc.)
-   - Answer Key line
-   - Solution / Explanation
-   Use \\n for line breaks.
+For each item, return a JSON object with:
+1. question_no: The question number as an integer. If it is a passage, directions, or unnumbered text, use 0.
+2. raw_text: The complete text of the item, including all options, answer keys, and solutions. Use \\n for line breaks.
 
-CRITICAL FORMATTING RESTORATION RULE:
-The input text may have lost its line breaks during document conversion, causing items to appear crammed on a single line. You MUST detect and restore proper formatting by placing each structural item on its OWN LINE. This includes but is not limited to:
-   - Labeled items: A. B. C. D. E. or a. b. c. d. or (a) (b) (c) (d)
-   - Roman numerals: I. II. III. IV. or (i) (ii) (iii) (iv)
-   - Match the Following columns: List-I / List-II pairs, each pair on its own line
-   - Numbered sub-items within question body: 1. 2. 3. 4. (when they are part of the question stem, NOT the MCQ options)
-   - Option groups: (1) (2) (3) (4) — each on its own line
-   - Any tabular or columnar data that has been flattened into one line
+CRITICAL FORMATTING RESTORATION:
+The input text may have lost line breaks. Restore proper formatting by placing structural items on their own line:
+- Options (e.g., A. B. C. D. or (1) (2) (3) (4))
+- Roman numerals (e.g., I. II. III. IV.)
+Ensure these are on separate lines in `raw_text`.
 
-Example of BAD input (collapsed):
-"A. Loans and Advances B. Cash Reserve Ratio C. Open Market Operations D. Statutory Liquidity Ratio"
+EXCEPTION FOR MARKDOWN TABLES:
+If the text contains a Markdown table (e.g., `| Col1 | Col2 |`), you MUST preserve it exactly as a single line per row. Do NOT break table rows across multiple lines.
 
-You must OUTPUT this as:
-"A. Loans and Advances\\nB. Cash Reserve Ratio\\nC. Open Market Operations\\nD. Statutory Liquidity Ratio"
+Example of BAD input: "A. Loans B. Cash C. Open D. SLR"
+You must OUTPUT this as: "A. Loans\\nB. Cash\\nC. Open\\nD. SLR"
 
-Similarly for Match the Following:
-BAD: "List-I List-II a. Item1 i. Match1 b. Item2 ii. Match2"
-GOOD (restored as a markdown table):
-"| List-I | List-II |\\n|---|---|\\n| a. Item1 | i. Match1 |\\n| b. Item2 | ii. Match2 |"
-
-RULES:
-- Do NOT rephrase, restructure content, or change wording. Only restore line breaks where items were collapsed.
-- Preserve all numbering, labels, formatting, and mathematical expressions exactly.
-- If a passage/table/chart appears before a group of questions and applies to all of them, include it ONLY in the first question's raw_text.
-- Do NOT repeat shared passages/tables in subsequent questions of the same group.
-
-TEXT:
+TEXT TO SEGMENT:
 {chunk}
 
-Return a JSON object: {"questions": [...]}"""
+Return a JSON object strictly in this format: {"questions": [{"question_no": 0, "raw_text": "..."}, ...]}"""
+
+
+def _sanitize_json_string(raw: str) -> str:
+    """
+    Fix unescaped control characters inside JSON string values.
+
+    The LLM sometimes outputs literal newlines, tabs, or other control
+    characters inside JSON strings (e.g. in raw_text fields).  These are
+    invalid JSON and cause 'Unterminated string' errors in json.loads().
+
+    This function walks through the raw JSON character-by-character,
+    tracks whether we're inside a string literal, and escapes any
+    unescaped control characters found within strings.
+    """
+    result = []
+    in_string = False
+    i = 0
+    n = len(raw)
+
+    while i < n:
+        ch = raw[i]
+
+        if in_string:
+            if ch == '\\':
+                # Escaped character — take it and the next char as-is
+                result.append(ch)
+                if i + 1 < n:
+                    i += 1
+                    result.append(raw[i])
+            elif ch == '"':
+                # End of string
+                result.append(ch)
+                in_string = False
+            elif ch == '\n':
+                result.append('\\n')
+            elif ch == '\r':
+                result.append('\\r')
+            elif ch == '\t':
+                result.append('\\t')
+            elif ord(ch) < 0x20:
+                # Other control characters — escape as unicode
+                result.append(f'\\u{ord(ch):04x}')
+            else:
+                result.append(ch)
+        else:
+            result.append(ch)
+            if ch == '"':
+                in_string = True
+
+        i += 1
+
+    return ''.join(result)
 
 
 def _extract_chunk(chunk: str, chunk_idx: int, total_chunks: int,
                    max_retries: int = 3) -> list:
-    """Send one chunk to GPT-4o-mini and parse the response."""
+    """Send one chunk to Gemini and parse the response."""
     prompt = EXTRACTION_PROMPT.replace("{chunk}", chunk)
 
     for attempt in range(1, max_retries + 1):
         try:
-            response = client.chat.completions.create(
+            response = client.models.generate_content(
                 model=MODEL,
-                messages=[{"role": "user", "content": prompt}],
-                response_format={"type": "json_object"},
-                temperature=0.0,
-                max_tokens=16384,
+                contents=[types.Content(role="user", parts=[types.Part.from_text(text=prompt)])],
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    temperature=0.0,
+                    max_output_tokens=65536,
+                )
             )
-            data = json.loads(response.choices[0].message.content)
-            qs = data.get("questions", [])
+            raw = response.text.strip()
+            if raw.startswith("```"):
+                raw = raw.split("```")[1]
+                if raw.startswith("json"):
+                    raw = raw[4:]
+                raw = raw.strip()
+
+            # Sanitize: fix unescaped newlines/control chars inside JSON strings
+            # The LLM sometimes outputs literal newlines inside JSON string values
+            # which causes "Unterminated string" errors in json.loads()
+            raw = _sanitize_json_string(raw)
+
+            data = json.loads(raw)
+            if isinstance(data, list):
+                qs = data
+            elif isinstance(data, dict):
+                qs = data.get("questions", [])
+                if not isinstance(qs, list):
+                    qs = [qs]
+            else:
+                qs = []
+
+            extracted = []
+            for q in qs:
+                if not isinstance(q, dict):
+                    continue
+                raw_text = q.get("raw_text")
+                if raw_text is None:
+                    raw_text = ""
+                raw_text = str(raw_text).strip()
+                if not raw_text:
+                    continue
+                
+                try:
+                    q_no = int(q.get("question_no", 0))
+                except (ValueError, TypeError):
+                    q_no = 0
+
+
+                
+                
+                extracted.append({
+                    "question_no": q_no,
+                    "raw_text": raw_text
+                })
+
             print(f"[text_extractor] Chunk {chunk_idx}/{total_chunks}: "
-                  f"{len(qs)} question(s) extracted")
-            return [
-                {
-                    "question_no": int(q.get("question_no", 0)),
-                    "raw_text": str(q.get("raw_text", "")).strip(),
-                }
-                for q in qs
-                if q.get("raw_text", "").strip()
-            ]
+                  f"{len(extracted)} question(s) extracted")
+
+            return extracted
         except Exception as e:
             print(f"[text_extractor] Chunk {chunk_idx} attempt "
                   f"{attempt}/{max_retries} failed: {e}")
@@ -260,46 +403,71 @@ def _extract_chunk(chunk: str, chunk_idx: int, total_chunks: int,
 def _deduplicate(questions: list) -> list:
     """Remove duplicate questions based on normalized text content.
     Preserves the original document question numbers extracted by the LLM.
+    Also merges orphaned Answer Key / Solution fragments back into the
+    preceding question so they don't appear as standalone q_no=0 blocks.
     """
+
+    # ── Pass 0: Merge orphaned Answer Key / Solution fragments ────────────
+    # Sometimes the LLM extraction separates the Answer Key / Solution from
+    # its parent question into a standalone q_no=0 item.  Detect these and
+    # append their text back into the previous question's raw_text.
+    merged = []
+    for q in questions:
+        raw = q.get("raw_text", "").strip()
+        q_no = q.get("question_no", 0)
+
+        # An orphan is a q_no==0 item that starts with "Answer Key" or "Solution"
+        is_orphan = (
+            q_no == 0
+            and merged  # there is a preceding question to merge into
+            and re.match(r'^(Answer\s*Key|Solution)\s*:', raw, re.IGNORECASE)
+        )
+
+        if is_orphan:
+            # Append to the previous question's raw_text
+            merged[-1]["raw_text"] = merged[-1]["raw_text"].rstrip() + "\n" + raw
+        else:
+            merged.append(q)
+
+    # ── Pass 1: Deduplicate ───────────────────────────────────────────────
     seen = set()
     unique = []
     last_q_no = 0
-    for q in questions:
-        # Normalize: strip whitespace for comparison
-        norm = re.sub(r"\s+", "", q.get("raw_text", ""))
-        if not norm or len(norm) < 20:
-            continue
-        if norm not in seen:
-            seen.add(norm)
-            
-            q_no = q.get("question_no")
-            
-            # If LLM failed to extract a number (0 or None), 
-            # fallback to the last known number + 1
-            if not q_no:
-                q_no = last_q_no + 1
-                q["question_no"] = q_no
-            
-            # Ensure it's an int and update our running counter
-            try:
-                q_no_int = int(q_no)
-                if q_no_int > last_q_no:
-                    last_q_no = q_no_int
-                # If we suddenly get a number lower than expected (e.g. LLM hallucinates 1), 
-                # we don't bring last_q_no down, we just accept the extracted number.
-            except (ValueError, TypeError):
-                pass
+    for q in merged:
+            # Normalize: strip whitespace for comparison
+            norm = re.sub(r"\s+", "", q.get("raw_text", ""))
+            if not norm or len(norm) < 5:
+                continue
+            if norm not in seen:
+                seen.add(norm)
                 
-            # Enforce the question number prefix on the raw_text so it appears in the UI
-            raw = str(q.get("raw_text", "")).strip()
-            if not re.match(r'^\d+\.', raw):
-                # E.g. "What is..." -> "46. What is..."
-                q["raw_text"] = f"{q['question_no']}. {raw}"
-            else:
-                # Force the prefix to exactly match the extracted/assigned question_no
-                q["raw_text"] = re.sub(r'^\d+\.', f"{q['question_no']}.", raw, count=1)
+                q_no = q.get("question_no")
                 
-            unique.append(q)
+                # Default to 0 (which means unnumbered passage/directions)
+                if not q_no:
+                    q_no = 0
+                    q["question_no"] = 0
+                
+                # Ensure it's an int and update our running counter
+                try:
+                    q_no_int = int(q_no)
+                    if q_no_int > last_q_no:
+                        last_q_no = q_no_int
+                except (ValueError, TypeError):
+                    pass
+                    
+                # Enforce the question number prefix on the raw_text so it appears in the UI
+                # ONLY if it's an actual numbered question (>0)
+                if q["question_no"] > 0:
+                    raw = str(q.get("raw_text", "")).strip()
+                    if not re.match(r'^\d+\.', raw):
+                        # E.g. "What is..." -> "46. What is..."
+                        q["raw_text"] = f"{q['question_no']}. {raw}"
+                    else:
+                        # Force the prefix to exactly match the extracted/assigned question_no
+                        q["raw_text"] = re.sub(r'^\d+\.', f"{q['question_no']}.", raw, count=1)
+                    
+                unique.append(q)
     return unique
 
 
@@ -307,7 +475,7 @@ def _deduplicate(questions: list) -> list:
 # PUBLIC API — main entry point
 # ═════════════════════════════════════════════════════════════════════════════
 
-def extract_questions(file_path: str, images_folder: str = None) -> list:
+def extract_questions(file_path: str) -> list:
     """
     Extract questions from .docx or .html files.
 
@@ -322,7 +490,6 @@ def extract_questions(file_path: str, images_folder: str = None) -> list:
 
     Args:
         file_path: Path to the .docx or .html file
-        images_folder: Unused, kept for interface compatibility
 
     Returns:
         List of dicts: [{"question_no": int, "raw_text": str}, ...]
@@ -334,7 +501,7 @@ def extract_questions(file_path: str, images_folder: str = None) -> list:
         import mammoth
         print(f"[text_extractor] Converting .docx → HTML via mammoth...")
         with open(file_path, "rb") as f:
-            html_content = mammoth.convert_to_html(f).value
+            html_content = mammoth.convert_to_html(f, style_map="u => u").value
     elif ext in (".html", ".htm"):
         print(f"[text_extractor] Reading HTML file...")
         with open(file_path, "r", encoding="utf-8") as f:
@@ -362,11 +529,13 @@ def extract_questions(file_path: str, images_folder: str = None) -> list:
     chunk_results = {}
     
     # Use max_workers=10 so we can process up to 10 chunks simultaneously
+    last_error = None
     with concurrent.futures.ThreadPoolExecutor(max_workers=min(10, max(1, len(chunks)))) as executor:
-        futures = {
-            executor.submit(_extract_chunk, chunk, idx, len(chunks)): idx 
-            for idx, chunk in enumerate(chunks, 1)
-        }
+        futures = {}
+        for idx, chunk in enumerate(chunks, 1):
+            future = executor.submit(_extract_chunk, chunk, idx, len(chunks))
+            futures[future] = idx
+            time.sleep(0.7)
         
         for future in concurrent.futures.as_completed(futures):
             idx = futures[future]
@@ -375,6 +544,7 @@ def extract_questions(file_path: str, images_folder: str = None) -> list:
                 chunk_results[idx] = qs
             except Exception as e:
                 print(f"[text_extractor] Chunk {idx} extraction failed completely: {e}")
+                last_error = e
                 chunk_results[idx] = []
                 
     # Combine results in the correct original order
@@ -385,6 +555,8 @@ def extract_questions(file_path: str, images_folder: str = None) -> list:
     questions = _deduplicate(all_questions)
 
     if not questions:
+        if last_error:
+            raise RuntimeError(f"No questions could be extracted from the document. Reason: {last_error}")
         raise RuntimeError("No questions could be extracted from the document.")
 
     print(f"[text_extractor] ✅ Total: {len(questions)} unique question(s)")

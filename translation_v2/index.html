@@ -97,6 +97,19 @@ nav{background:var(--white);border-bottom:1px solid var(--gray-100);padding:0 40
 .lang-tile:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-dim);}
 .lang-tile.active{background:var(--blue);border-color:var(--blue);color:var(--white);box-shadow:0 3px 12px rgba(42,159,232,0.3);}
 .lang-tile.active .native{color:rgba(255,255,255,0.75);}
+/* Email input */
+.email-input-wrap{display:flex;align-items:center;gap:0;margin:18px auto;max-width:420px;}
+.email-input-wrap input{flex:1;border:2px solid var(--gray-100);border-right:none;border-radius:10px 0 0 10px;padding:13px 16px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--black);outline:none;transition:border-color 0.2s;}
+.email-input-wrap input:focus{border-color:var(--blue);}
+.email-input-wrap input::placeholder{color:var(--gray-300);font-weight:400;}
+.email-domain{background:var(--gray-100);border:2px solid var(--gray-100);border-left:none;border-radius:0 10px 10px 0;padding:13px 16px;font-size:14px;font-weight:600;color:var(--gray-500);white-space:nowrap;}
+.send-email-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--accent),var(--accent-lt));color:var(--white);border:none;border-radius:10px;padding:13px 28px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 16px rgba(255,107,53,0.3);margin-top:16px;}
+.send-email-btn:hover:not(:disabled){background:var(--accent);transform:translateY(-2px);}
+.send-email-btn:disabled{opacity:0.45;cursor:not-allowed;}
+.email-success{display:none;align-items:center;gap:10px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:13px 16px;font-size:13px;color:var(--success);margin-top:14px;animation:slideIn 0.3s ease;font-weight:600;}
+.email-success.visible{display:flex;}
+.email-error{display:none;align-items:center;gap:10px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:13px 16px;font-size:13px;color:var(--error);margin-top:14px;animation:slideIn 0.3s ease;}
+.email-error.visible{display:flex;}
 /* Translate button */
 .translate-btn{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent-lt));border:none;border-radius:12px;padding:16px 24px;font-family:var(--font);font-size:15px;font-weight:700;color:var(--white);cursor:pointer;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.25s,background 0.2s,opacity 0.3s;margin-top:4px;}
 .translate-btn::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transform:skewX(-20deg);animation:shimmerBtn 3.5s 1s infinite;}
@@ -223,6 +236,7 @@ footer{text-align:center;color:var(--gray-300);font-size:12px;padding-top:24px;b
     <div class="card">
       <div class="lang-grid" id="langGrid"></div>
     </div>
+    </div>
     <button class="translate-btn" id="translateBtn" disabled>
       <div class="btn-inner">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
@@ -278,7 +292,7 @@ footer{text-align:center;color:var(--gray-300);font-size:12px;padding-top:24px;b
     </div>
   </div>
 
-  <!-- PAGE 5: Done -->
+  <!-- PAGE 5: Done — Email delivery -->
   <div class="page" id="pageDone">
     <div class="card">
       <div class="result-inner">
@@ -287,10 +301,23 @@ footer{text-align:center;color:var(--gray-300);font-size:12px;padding-top:24px;b
         </div>
         <h3>Translation Complete!</h3>
         <p>Your document has been translated into <span id="resultLang">—</span>.</p>
-        <a class="download-btn" id="btnDownload" href="#" download>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Download .docx
-        </a>
+        <p style="font-size:13px;color:var(--gray-500);margin-bottom:18px;">Enter your Oliveboard username to receive the translated document via email.</p>
+        <div class="email-input-wrap">
+          <input type="text" id="emailUsername" placeholder="your.name" autocomplete="off" />
+          <span class="email-domain">@oliveboard.in</span>
+        </div>
+        <button class="send-email-btn" id="btnSendEmail">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          Send via Email
+        </button>
+        <div class="email-success" id="emailSuccess">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="emailSuccessMsg">Email sent successfully!</span>
+        </div>
+        <div class="email-error" id="emailError">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="emailErrMsg"></span>
+        </div>
         <button class="reset-btn" id="resetBtn">Translate another file</button>
       </div>
     </div>
@@ -354,7 +381,7 @@ const LANGUAGES=[
   {en:'Odia',native:'ଓଡ଼ିଆ'},{en:'Assamese',native:'অসমীয়া'},
 ];
 
-let selectedFile=null,activeLang=null,currentJobId=null;
+let selectedFile=null,activeLang=null,currentJobId=null,batchPollInterval=null;
 const $=id=>document.getElementById(id);
 
 // Pages
@@ -426,7 +453,6 @@ $('translateBtn').addEventListener('click',async()=>{
       // Parse batch info from the done event
       let batchBreaks=[];
       try{const doneData=JSON.parse(e.data);batchBreaks=doneData.batch_breaks||[];}catch(_){}
-      const batchBreaksSet=new Set(batchBreaks);
 
       const res=await fetch(`${API}/api/review/${jobId}`);
       const data=await res.json();if(!res.ok)throw new Error(data.detail||'Failed to load.');
@@ -434,11 +460,13 @@ $('translateBtn').addEventListener('click',async()=>{
       $('reviewLang').textContent=activeLang;
 
       // Build review text with auto-inserted batch break markers
+      // batch_breaks contains 0-based indices (last question index in each batch)
+      const batchBreaksSet=new Set(batchBreaks);
       const blocks=[];
-      data.questions.forEach(q=>{
+      data.questions.forEach((q,idx)=>{
         if(!q.raw_text)return;
         blocks.push(q.raw_text);
-        if(batchBreaksSet.has(q.question_no)){
+        if(batchBreaksSet.has(idx)){
           blocks.push(BREAK_MARKER);
         }
       });
@@ -467,12 +495,20 @@ $('reviewEditor').addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='b'){e.pr
 $('reviewEditor').addEventListener('input',updateBatchChip);
 
 function extractBatchBreaks(text){
-  const breaks=[];
+  // Split text by batch break markers into sections
   const sections=text.split(/\n?\s*━+\s*BATCH BREAK\s*━+\s*\n?/);
-  sections.slice(0,-1).forEach(sec=>{
-    // Match question numbers at start of lines: "1. ", "23. ", etc.
-    const m=[...sec.matchAll(/^(\d+)\.\s/gm)];
-    if(m.length>0)breaks.push(parseInt(m[m.length-1][1]));
+  const breaks=[];
+  let runningIdx=-1;
+  // For each section (except the last), count how many question blocks it has
+  // A question block is a non-empty chunk separated by double newlines
+  sections.forEach((sec,secIdx)=>{
+    // Count question blocks in this section
+    const blocks=sec.split(/\n\n+/).filter(b=>b.trim().length>0);
+    runningIdx+=blocks.length;
+    // Add a break after every section except the last
+    if(secIdx<sections.length-1){
+      breaks.push(runningIdx);
+    }
   });
   return breaks;
 }
@@ -488,19 +524,80 @@ $('btnProceed').addEventListener('click',async()=>{
   setStep(4);$('translateLog').innerHTML='';
   setProgress($('translateFill'),$('translatePct'),$('translateTitle'),5,'Starting...');
   addLog($('translateLog'),`Translating into ${activeLang} — ${totalBatches} batch(es)...`);
-  const sse=new EventSource(`${API}/api/translate-stream/${currentJobId}`);let pct=10;
-  sse.onmessage=e=>{addLog($('translateLog'),e.data);pct=Math.min(pct+Math.floor(75/totalBatches),92);setProgress($('translateFill'),$('translatePct'),$('translateTitle'),pct,'Translating...');};
-  sse.addEventListener('done',async e=>{
-    sse.close();setProgress($('translateFill'),$('translatePct'),$('translateTitle'),100,'Complete');
-    addLog($('translateLog'),'Done!','success');
-    let filename='';try{filename=JSON.parse(e.data).filename;}catch(_){}
-    $('resultLang').textContent=activeLang;
-    $('btnDownload').href=`${API}/api/download/${currentJobId}`;
-    $('btnDownload').download=filename||`translated_${activeLang.toLowerCase()}.docx`;
-    await new Promise(r=>setTimeout(r,500));setStep(5);
-  });
-  sse.addEventListener('error',e=>{sse.close();showErr($('translateErr'),$('translateErrMsg'),e.data||'Translation failed.');addLog($('translateLog'),e.data||'Failed.','error');});
-  sse.onerror=()=>{if(sse.readyState===EventSource.CLOSED)return;sse.close();showErr($('translateErr'),$('translateErrMsg'),'Connection lost.');};
+  // ── BATCH MODE (always) ──
+  addLog($('translateLog'),'Submitting batch job...');
+  setProgress($('translateFill'),$('translatePct'),$('translateTitle'),10,'Submitting batch...');
+  try{
+    const batchRes=await fetch(`${API}/api/batch-translate/${currentJobId}`,{method:'POST'});
+    const batchData=await batchRes.json();
+    if(!batchRes.ok)throw new Error(batchData.detail||'Failed to submit batch job.');
+    addLog($('translateLog'),`Batch job submitted (${batchData.batch_count} batch(es)). Polling for results...`);
+    setProgress($('translateFill'),$('translatePct'),$('translateTitle'),20,'Batch submitted — waiting...');
+  }catch(err){showErr($('translateErr'),$('translateErrMsg'),err.message);return;}
+
+  // Poll for batch completion
+  batchPollInterval=setInterval(async()=>{
+    try{
+      const statusRes=await fetch(`${API}/api/batch-status/${currentJobId}`);
+      const statusData=await statusRes.json();
+      if(!statusRes.ok)throw new Error(statusData.detail||'Status check failed.');
+
+      const state=statusData.state;
+      addLog($('translateLog'),`Batch status: ${state}`);
+
+      if(state==='JOB_STATE_SUCCEEDED'){
+        clearInterval(batchPollInterval);
+        setProgress($('translateFill'),$('translatePct'),$('translateTitle'),80,'Collecting results...');
+        addLog($('translateLog'),'Batch complete! Collecting results and building document (this may take a few minutes)...');
+
+        const collectRes=await fetch(`${API}/api/batch-collect/${currentJobId}`,{method:'POST'});
+        const collectData=await collectRes.json();
+        if(!collectRes.ok)throw new Error(collectData.detail||'Failed to start collecting results.');
+
+        // Start polling for collect status
+        const collectPollInterval = setInterval(async () => {
+          try {
+            const cRes = await fetch(`${API}/api/collect-status/${currentJobId}`);
+            const cData = await cRes.json();
+            if (!cRes.ok) throw new Error(cData.detail||'Failed to check collect status.');
+            
+            if (cData.status === 'done') {
+              clearInterval(collectPollInterval);
+              setProgress($('translateFill'),$('translatePct'),$('translateTitle'),100,'Complete');
+              addLog($('translateLog'),'Done!','success');
+              $('resultLang').textContent=activeLang;
+              await new Promise(r=>setTimeout(r,500));
+              setStep(5);
+            } else if (cData.status === 'collect_failed') {
+               clearInterval(collectPollInterval);
+               throw new Error(cData.error || 'Collection background task failed.');
+            } else {
+               // Still collecting
+               let p=parseInt($('translatePct').textContent)||80;
+               p=Math.min(p+1,95);
+               setProgress($('translateFill'),$('translatePct'),$('translateTitle'),p,'Collecting and building DOCX...');
+            }
+          } catch(err) {
+            clearInterval(collectPollInterval);
+            showErr($('translateErr'),$('translateErrMsg'),err.message);
+            addLog($('translateLog'),err.message,'error');
+          }
+        }, 3000); // Poll every 3 seconds
+      } else if(state==='JOB_STATE_FAILED'||state==='JOB_STATE_CANCELLED'||state==='JOB_STATE_EXPIRED'){
+        clearInterval(batchPollInterval);
+        throw new Error(`Batch job ended with state: ${state}`);
+      } else {
+        // Still running — update progress
+        let p=parseInt($('translatePct').textContent)||20;
+        p=Math.min(p+2,75);
+        setProgress($('translateFill'),$('translatePct'),$('translateTitle'),p,'Batch processing...');
+      }
+    }catch(err){
+      clearInterval(batchPollInterval);
+      showErr($('translateErr'),$('translateErrMsg'),err.message);
+      addLog($('translateLog'),err.message,'error');
+    }
+  },15000); // Poll every 15 seconds
 });
 
 // Fullscreen toggle
@@ -518,12 +615,35 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isFullscreen){isFul
 $('resetBtn').addEventListener('click',()=>{
   selectedFile=null;$('fileInput').value='';$('fileInfo').classList.remove('visible');
   activeLang=null;currentJobId=null;
+  if(batchPollInterval){clearInterval(batchPollInterval);batchPollInterval=null;}
   $('translateBtn').disabled=true;
   $('extractLog').innerHTML='';$('translateLog').innerHTML='';$('reviewEditor').value='';
   document.querySelectorAll('.lang-tile').forEach(t=>t.classList.remove('active'));
   $('btnProceed').disabled=false;
+  $('emailUsername').value='';$('emailSuccess').classList.remove('visible');$('emailError').classList.remove('visible');
+  $('btnSendEmail').disabled=false;
   ['uploadErr','extractErr','translateErr','reviewErr'].forEach(id=>$(id).classList.remove('visible'));
   setStep(1);
+});
+
+// Email send handler
+$('btnSendEmail').addEventListener('click',async()=>{
+  const username=$('emailUsername').value.trim();
+  if(!username){showErr($('emailError'),$('emailErrMsg'),'Please enter your Oliveboard username.');return;}
+  if(!/^[a-zA-Z0-9._-]+$/.test(username)){showErr($('emailError'),$('emailErrMsg'),'Invalid username. Use only letters, numbers, dots, underscores, or hyphens.');return;}
+  $('btnSendEmail').disabled=true;
+  $('emailError').classList.remove('visible');
+  $('emailSuccess').classList.remove('visible');
+  try{
+    const res=await fetch(`${API}/api/send-email/${currentJobId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username})});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.detail||'Failed to send email.');
+    $('emailSuccessMsg').textContent=`Email sent to ${username}@oliveboard.in! Check your inbox in a few minutes.`;
+    $('emailSuccess').classList.add('visible');
+  }catch(err){
+    showErr($('emailError'),$('emailErrMsg'),err.message);
+    $('btnSendEmail').disabled=false;
+  }
 });
 </script>
 </body>

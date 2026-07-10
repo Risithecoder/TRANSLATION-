@@ -31,7 +31,7 @@ RESPONSE_SCHEMA = {
             "answer": {"type": "string"},
             "solution": {"type": "string"}
         },
-        "required": ["question_no", "question", "options"]
+        "required": ["question_no", "question"]
     }
 }
 
@@ -46,7 +46,10 @@ Rules:
 - Keep all text exactly as written — do not paraphrase or correct anything.
 - Extract the FULL solution text including all option explanations and any "Further Insights" section.
 - If a question or solution spans across two pages, combine it fully into one entry.
-- Ignore headers, footers, watermarks, page numbers, and instructions.
+- Ignore headers, footers, watermarks, and page numbers.
+- CRITICAL: Do NOT ignore DIRECTIONS or reading comprehension passages. 
+- Instead of attaching the passage to a question, extract it as its OWN STANDALONE ITEM in the JSON array.
+- For these standalone passage items, set `question_no` to 0, put the passage text in `question`, and leave `options`, `answer`, and `solution` empty.
 - Ignore any marking scheme symbols (X marks, tick marks, etc.).
 - If options are labelled 1/2/3/4 instead of A/B/C/D, map them: 1→A, 2→B, 3→C, 4→D.
 - For the answer field: if the answer is given as a letter (A/B/C/D) use that. If given as a number (1/2/3/4), convert to letter.

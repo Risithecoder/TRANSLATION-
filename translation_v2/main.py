@@ -1,24 +1,29 @@
 import os
+import re
 import uuid
-import glob
 import json
 import time
+import asyncio
 from threading import Thread
-from fastapi import FastAPI, UploadFile, File, Form, Request, HTTPException
-from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
+from fastapi import FastAPI, UploadFile, File, Form, Request, HTTPException, BackgroundTasks
+from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 # ── Project modules ──────────────────────────────────────────────────────────
 import text_extractor
-import translator
+
 import docx_builder
+# import cache_manager
+import batch_translator
+import email_sender
 
 # ── App setup ────────────────────────────────────────────────────────────────
 app = FastAPI()
+
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -58,7 +63,7 @@ def load_json(job_id: str, filename: str):
 @app.post("/api/upload")
 async def upload_file(
     file: UploadFile = File(...),
-    language: str = Form(...)
+    language: str = Form(...),
 ):
     ext = os.path.splitext(file.filename or "")[-1].lower()
     if ext not in (".docx", ".html", ".htm"):
@@ -78,7 +83,7 @@ async def upload_file(
         "language": language,
         "original_filename": file.filename,
         "ext": ext,
-        "status": "uploaded"
+        "status": "uploaded",
     })
 
     return {"job_id": job_id}
@@ -94,16 +99,17 @@ def _sse(event: str = "message", data: str = "") -> str:
         return f"data: {data}\n\n"
     return f"event: {event}\ndata: {data}\n\n"
 
-def _auto_batch_breaks(total_questions: int, batch_size: int = DEFAULT_BATCH_SIZE) -> list:
+def _auto_batch_breaks(questions: list, batch_size: int = DEFAULT_BATCH_SIZE) -> list:
     """
-    Generate batch break positions for auto-batching.
-    Returns a list of question_no values after which a batch break is placed.
-    E.g., with batch_size=5 and 12 questions: [5, 10] → batches [1-5], [6-10], [11-12]
+    Generate batch break positions using absolute 0-based indices.
+    Returns a list of indices — each index is the LAST question in a batch.
+    E.g. for 10 questions with batch_size=3: [2, 5, 8]  (last batch has q[9])
     """
     breaks = []
-    for i in range(batch_size, total_questions, batch_size):
+    for i in range(batch_size - 1, len(questions) - 1, batch_size):
         breaks.append(i)
     return breaks
+
 
 
 def extract_stream_generator(job_id: str):
@@ -117,44 +123,46 @@ def extract_stream_generator(job_id: str):
         key = f"{job_id}_extract"
         thread_results[key] = None
 
-        def _run_extraction(path=upload_path, jdir=job_path(job_id), k=key):
+        def _run_extraction(path=upload_path, k=key):
             try:
                 print(f"[extraction] Starting for job {job_id}")
-                qs = text_extractor.extract_questions(path, images_folder=jdir)
+                qs = text_extractor.extract_questions(path)
                 print(f"[extraction] Done — {len(qs)} questions")
                 thread_results[k] = {"result": qs}
-            except Exception as ex:
+            except BaseException as ex:
                 import traceback
+                tb = traceback.format_exc()
                 print(f"[extraction] ERROR: {ex}")
-                print(traceback.format_exc())
-                thread_results[k] = {"error": str(ex)}
+                print(tb)
+                thread_results[k] = {"error": str(ex), "traceback": tb}
 
-        t = Thread(target=_run_extraction)
+        t = Thread(target=_run_extraction, daemon=True)
         t.start()
         while t.is_alive():
             yield ":\n\n"   # SSE heartbeat
-            time.sleep(10)
+            time.sleep(1)
         t.join()
+        time.sleep(0.1)  # brief pause to ensure thread_results write is visible
 
         res = thread_results.pop(key, None)
         if res is None:
-            raise Exception("Extraction thread returned no result.")
+            raise Exception(
+                "Extraction thread returned no result. "
+                "Check server logs for details — the thread may have crashed silently."
+            )
         if "error" in res:
-            raise Exception(res["error"])
+            tb_hint = f" | Traceback: {res.get('traceback', '')[-300:]}" if res.get('traceback') else ""
+            raise Exception(f"{res['error']}{tb_hint}")
 
         all_questions = res["result"]
         if not all_questions:
             raise Exception("No questions found in the document.")
 
-        # Re-number questions sequentially
-        for idx, q in enumerate(all_questions, start=1):
-            q["question_no"] = idx
-
         # Save extracted questions
         save_json(job_id, "questions.json", all_questions)
 
         # Auto-batch: generate default batch breaks every DEFAULT_BATCH_SIZE questions
-        batch_breaks = _auto_batch_breaks(len(all_questions))
+        batch_breaks = _auto_batch_breaks(all_questions)
         save_json(job_id, "batch_breaks.json", batch_breaks)
         num_batches = len(batch_breaks) + 1
 
@@ -206,8 +214,8 @@ def get_review(job_id: str):
 # ═════════════════════════════════════════════════════════════════════════════
 # ROUTE 4 — Save reviewed + batch-broken questions
 # POST /api/save-review/{job_id}
-# Body: { questions: [...], batch_breaks: [15, 30, ...] }
-#   batch_breaks: list of question_no values AFTER which a batch break is placed
+# Body: { questions: [...], batch_breaks: [2, 5, 8, ...] }
+#   batch_breaks: list of 0-based indices — each is the LAST question in a batch
 # ═════════════════════════════════════════════════════════════════════════════
 @app.post("/api/save-review/{job_id}")
 async def save_review(job_id: str, request: Request):
@@ -238,85 +246,108 @@ async def save_review(job_id: str, request: Request):
 def split_into_batches(questions: list, batch_breaks: list) -> list:
     """
     Split questions list into batches using batch_breaks.
-    batch_breaks is a list of question_no values after which a new batch starts.
-    E.g. breaks=[20, 40] with 60 questions → [Q1–Q20], [Q21–Q40], [Q41–Q60]
-    Falls back to single batch if no breaks.
+    batch_breaks is a sorted list of 0-based indices — each index is the LAST
+    question in a batch.  E.g. [2, 5, 8] means:
+      batch 1 = questions[0:3], batch 2 = questions[3:6], batch 3 = questions[6:9], batch 4 = rest
+    If breaks is empty, falls back to fixed batches of DEFAULT_BATCH_SIZE (3).
     """
     if not batch_breaks:
-        return [questions]
+        return [questions[i:i + DEFAULT_BATCH_SIZE] for i in range(0, len(questions), DEFAULT_BATCH_SIZE)]
 
-    breaks_set = set(batch_breaks)
+    # Sort and deduplicate, clamp to valid range
+    sorted_breaks = sorted(set(b for b in batch_breaks if 0 <= b < len(questions)))
+
+    if not sorted_breaks:
+        return [questions[i:i + DEFAULT_BATCH_SIZE] for i in range(0, len(questions), DEFAULT_BATCH_SIZE)]
+
     batches = []
-    current_batch = []
+    start = 0
+    for break_idx in sorted_breaks:
+        end = break_idx + 1  # inclusive → exclusive
+        if start < end <= len(questions):
+            batches.append(questions[start:end])
+            start = end
 
-    for q in questions:
-        current_batch.append(q)
-        if q["question_no"] in breaks_set:
-            batches.append(current_batch)
-            current_batch = []
-
-    if current_batch:
-        batches.append(current_batch)
+    # Remaining questions after the last break
+    if start < len(questions):
+        batches.append(questions[start:])
 
     return batches
 
 
-def translate_stream_generator(job_id: str):
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ROUTE 6 — Batch API: Submit batch translation job
+# POST /api/batch-translate/{job_id}
+# ═════════════════════════════════════════════════════════════════════════════
+@app.post("/api/batch-translate/{job_id}")
+async def batch_translate(job_id: str):
+    questions_file = job_path(job_id, "questions.json")
+    if not os.path.exists(questions_file):
+        raise HTTPException(400, "Questions not found. Run extraction first.")
+
+    questions = load_json(job_id, "questions.json")
+    batch_breaks = (
+        load_json(job_id, "batch_breaks.json")
+        if os.path.exists(job_path(job_id, "batch_breaks.json"))
+        else []
+    )
+    meta = load_json(job_id, "meta.json")
+    language = meta["language"]
+
+    batches = split_into_batches(questions, batch_breaks)
+
     try:
-        questions_file = job_path(job_id, "questions.json")
-        if not os.path.exists(questions_file):
-            raise Exception("Questions not found. Run extraction first.")
+        batch_job_name = batch_translator.submit_batch_job(batches, language)
+    except Exception as e:
+        raise HTTPException(500, f"Failed to submit batch job: {e}")
 
-        questions = load_json(job_id, "questions.json")
-        batch_breaks = load_json(job_id, "batch_breaks.json") if os.path.exists(job_path(job_id, "batch_breaks.json")) else []
-        meta = load_json(job_id, "meta.json")
-        language = meta["language"]
+    # Save batch job info into meta
+    meta["status"] = "batch_translating"
+    meta["batch_job_name"] = batch_job_name
+    meta["batch_count"] = len(batches)
+    save_json(job_id, "meta.json", meta)
 
-        batches = split_into_batches(questions, batch_breaks)
-        yield _sse(data=f"Starting translation into {language} — {len(batches)} batch(es), {len(questions)} question(s) total.")
+    return {
+        "ok": True,
+        "batch_job_name": batch_job_name,
+        "batch_count": len(batches),
+    }
 
-        batch_outputs = [None] * len(batches)
-        import concurrent.futures
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ROUTE 7 — Batch API: Poll batch job status
+# GET /api/batch-status/{job_id}
+# ═════════════════════════════════════════════════════════════════════════════
+@app.get("/api/batch-status/{job_id}")
+async def batch_status(job_id: str):
+    meta_file = job_path(job_id, "meta.json")
+    if not os.path.exists(meta_file):
+        raise HTTPException(404, "Job not found.")
+
+    meta = load_json(job_id, "meta.json")
+    batch_job_name = meta.get("batch_job_name")
+    if not batch_job_name:
+        raise HTTPException(400, "No batch job found for this job. Use real-time mode or submit a batch first.")
+
+    try:
+        status = batch_translator.poll_batch_status(batch_job_name)
+    except Exception as e:
+        raise HTTPException(500, f"Failed to poll batch status: {e}")
+
+    return status
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ROUTE 8 — Batch API: Collect results and build DOCX
+# POST /api/batch-collect/{job_id}
+# ═════════════════════════════════════════════════════════════════════════════
+def _run_collect_and_build(job_id: str, batch_job_name: str, batches: list, language: str, meta: dict):
+    try:
+        batch_outputs = batch_translator.collect_batch_results(batch_job_name, batches, language)
         
-        yield _sse(data="Submitting batches for parallel translation...")
-        
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            futures = set()
-            for idx, batch in enumerate(batches):
-                future = executor.submit(translator.translate_batch, batch, language)
-                future.batch_idx = idx  # store index on future to maintain order
-                futures.add(future)
-                
-            completed = 0
-            while futures:
-                # Wait for up to 10 seconds for any future to complete
-                done, not_done = concurrent.futures.wait(
-                    futures, 
-                    timeout=10, 
-                    return_when=concurrent.futures.FIRST_COMPLETED
-                )
-                
-                # If nothing completed in 10s, send a heartbeat to keep SSE alive
-                if not done:
-                    yield ":\n\n"
-                    continue
-                    
-                # Process completed futures
-                for future in done:
-                    try:
-                        res = future.result()
-                        idx = future.batch_idx
-                        batch_outputs[idx] = res
-                        completed += 1
-                        yield _sse(data=f"Translated batch {idx + 1}/{len(batches)} (Completed: {completed}/{len(batches)}).")
-                    except Exception as e:
-                        raise Exception(f"Translation failed on batch {future.batch_idx + 1}: {e}")
-                
-                futures = not_done
-
-        yield _sse(data="All batches translated. Assembling document...")
-
-        # ── Step 6: Build DOCX ────────────────────────────────────────────
+        # Build DOCX
         original_name = os.path.splitext(meta["original_filename"])[0]
         output_filename = f"{language.lower()}_{original_name}.docx"
         output_path = job_path(job_id, output_filename)
@@ -326,55 +357,123 @@ def translate_stream_generator(job_id: str):
         meta["status"] = "done"
         meta["output_filename"] = output_filename
         save_json(job_id, "meta.json", meta)
-
-        yield _sse(data="Document ready.")
-        yield _sse(event="done", data=json.dumps({"filename": output_filename}))
-
     except Exception as e:
-        yield _sse(event="error", data=str(e))
+        print(f"[batch-collect] Error in background task: {e}")
+        meta["status"] = "collect_failed"
+        meta["error"] = str(e)
+        save_json(job_id, "meta.json", meta)
 
+@app.post("/api/batch-collect/{job_id}")
+async def batch_collect(job_id: str, background_tasks: BackgroundTasks):
+    meta_file = job_path(job_id, "meta.json")
+    if not os.path.exists(meta_file):
+        raise HTTPException(404, "Job not found.")
 
-@app.get("/api/translate-stream/{job_id}")
-def translate_stream(job_id: str):
-    return StreamingResponse(
-        translate_stream_generator(job_id),
-        media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
+    meta = load_json(job_id, "meta.json")
+    batch_job_name = meta.get("batch_job_name")
+    if not batch_job_name:
+        raise HTTPException(400, "No batch job found for this job.")
+
+    questions = load_json(job_id, "questions.json")
+    batch_breaks = (
+        load_json(job_id, "batch_breaks.json")
+        if os.path.exists(job_path(job_id, "batch_breaks.json"))
+        else []
     )
+    language = meta["language"]
+    batches = split_into_batches(questions, batch_breaks)
+
+    meta["status"] = "collecting"
+    save_json(job_id, "meta.json", meta)
+
+    background_tasks.add_task(_run_collect_and_build, job_id, batch_job_name, batches, language, meta)
+
+    return {"ok": True, "status": "collecting"}
+
+@app.get("/api/collect-status/{job_id}")
+def collect_status(job_id: str):
+    meta_file = job_path(job_id, "meta.json")
+    if not os.path.exists(meta_file):
+        raise HTTPException(404, "Job not found.")
+    meta = load_json(job_id, "meta.json")
+    status = meta.get("status")
+    
+    if status == "collect_failed":
+        raise HTTPException(500, meta.get("error", "Collection failed."))
+        
+    return {
+        "status": status,
+        "filename": meta.get("output_filename") if status == "done" else None
+    }
+
+
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# ROUTE 6 — Download translated DOCX
-# GET /api/download/{job_id}
+# ROUTE 10 — Send translated DOCX via email
+# POST /api/send-email/{job_id}
 # ═════════════════════════════════════════════════════════════════════════════
-@app.get("/api/download/{job_id}")
-def download(job_id: str):
+@app.post("/api/send-email/{job_id}")
+async def send_email(job_id: str, request: Request):
     meta_file = job_path(job_id, "meta.json")
     if not os.path.exists(meta_file):
         raise HTTPException(404, "Job not found.")
     meta = load_json(job_id, "meta.json")
     if meta.get("status") != "done":
         raise HTTPException(400, "Translation not complete yet.")
-    output_path = job_path(job_id, meta["output_filename"])
+
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(400, "Invalid request body.")
+
+    username = body.get("username", "").strip()
+    if not username:
+        raise HTTPException(400, "Username is required.")
+    # Basic validation: alphanumeric, dots, underscores, hyphens
+    if not re.match(r'^[a-zA-Z0-9._-]+$', username):
+        raise HTTPException(400, "Invalid username. Use only letters, numbers, dots, underscores, or hyphens.")
+
+    output_filename = meta.get("output_filename")
+    if not output_filename:
+        raise HTTPException(404, "Output filename not found in job metadata.")
+    output_path = job_path(job_id, output_filename)
     if not os.path.exists(output_path):
         raise HTTPException(404, "Output file not found.")
-    return FileResponse(
-        output_path,
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        filename=meta["output_filename"]
-    )
+
+    # Count questions for email summary
+    question_count = 0
+    questions_file = job_path(job_id, "questions.json")
+    if os.path.exists(questions_file):
+        questions = load_json(job_id, "questions.json")
+        question_count = len(questions)
+
+    try:
+        result = await asyncio.to_thread(
+            email_sender.send_translation_email,
+            username,
+            output_path,
+            meta["language"],
+            question_count,
+            meta.get("original_filename", "document"),
+        )
+        return result
+    except RuntimeError as e:
+        raise HTTPException(500, str(e))
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# ROUTE 7 — Serve frontend
+# ROUTE 11 — Serve frontend
 # ═════════════════════════════════════════════════════════════════════════════
 @app.get("/")
 def index():
     return FileResponse(os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html"))
 
 
+
+
 # ═════════════════════════════════════════════════════════════════════════════
-# ROUTE 8 — Health check
+# ROUTE 12 — Health check
 # ═════════════════════════════════════════════════════════════════════════════
 @app.get("/health")
 def health():
