@@ -174,6 +174,9 @@ def _render_text_block(doc, text: str, size=11, bold=False, italic=False, color=
         i += 1
 
 
+
+    
+
 def _renumber_options(options: list, start: int) -> list:
     """
     Force-renumber a list of option strings to start from `start`.

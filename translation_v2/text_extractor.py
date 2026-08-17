@@ -250,17 +250,8 @@ For each item, return a JSON object with:
 1. question_no: The question number as an integer. If it is a passage, directions, or unnumbered text, use 0.
 2. raw_text: The complete text of the item, including all options, answer keys, and solutions. Use \\n for line breaks.
 
-CRITICAL FORMATTING RESTORATION:
-The input text may have lost line breaks. Restore proper formatting by placing structural items on their own line:
-- Options (e.g., A. B. C. D. or (1) (2) (3) (4))
-- Roman numerals (e.g., I. II. III. IV.)
-Ensure these are on separate lines in `raw_text`.
-
 EXCEPTION FOR MARKDOWN TABLES:
 If the text contains a Markdown table (e.g., `| Col1 | Col2 |`), you MUST preserve it exactly as a single line per row. Do NOT break table rows across multiple lines.
-
-Example of BAD input: "A. Loans B. Cash C. Open D. SLR"
-You must OUTPUT this as: "A. Loans\\nB. Cash\\nC. Open\\nD. SLR"
 
 TEXT TO SEGMENT:
 {chunk}
