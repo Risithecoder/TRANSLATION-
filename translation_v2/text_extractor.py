@@ -148,18 +148,27 @@ def _html_to_plain_text(html_content: str) -> str:
 def _split_internal_labels(text: str) -> str:
     """
     Split lines that contain multiple internal labels (A. B. C. etc.)
-    onto separate lines. Only activates when 2+ labels are found on the
-    same line, so normal text like 'Section A. Introduction' is untouched.
+    onto separate lines. Only activates when 2+ sequential labels (e.g. A. B. C.)
+    are found on the same line, preventing incorrect splits on sentence-ending
+    variables like 'between Q and U. Q lives...'.
     """
     lines = text.split('\n')
     result = []
     for line in lines:
-        # Count single-letter labels A-Z followed by ". " in this line
-        labels = re.findall(r'\b[A-Z]\.\s', line)
+        # Find single-letter labels A-J followed by ". " in this line
+        labels = re.findall(r'\b([A-J])\.\s', line)
         if len(labels) >= 2:
-            # Insert a newline before each label that appears mid-line
-            # (i.e., preceded by non-whitespace text)
-            line = re.sub(r'(?<=\S)\s+([A-Z]\.\s)', r'\n\1', line)
+            # Verify if the matched labels are sequential (e.g. A, B, C or C, D)
+            is_sequential = True
+            for i in range(len(labels) - 1):
+                if ord(labels[i+1]) - ord(labels[i]) != 1:
+                    is_sequential = False
+                    break
+            
+            if is_sequential:
+                # Insert a newline before each label that appears mid-line
+                # (i.e., preceded by non-whitespace text)
+                line = re.sub(r'(?<=\S)\s+([A-J]\.\s)', r'\n\1', line)
         result.append(line)
     return '\n'.join(result)
 
@@ -245,6 +254,7 @@ ABSOLUTE RULES:
 1. DO NOT OMIT, DROP, OR IGNORE ANY TEXT. Every single word from the input MUST appear in one of the extracted items.
 2. If the text contains a passage, directions, or notes before the questions, you MUST create a separate item for it.
 3. DO NOT SUMMARIZE. Copy the text exactly.
+4. PRESERVE ALL FORMATTING TAGS. If the text contains <sup>, <sub>, **, or __, you MUST keep them exactly as they appear.
 
 For each item, return a JSON object with:
 1. question_no: The question number as an integer. If it is a passage, directions, or unnumbered text, use 0.
