@@ -186,8 +186,20 @@ def collect_batch_results(
 
         response = responses[idx]
         try:
-            # Extract text from the response
-            raw_text = response.candidates[0].content.parts[0].text
+            # InlinedResponse has: .response (GenerateContentResponse) and .error (JobError)
+            # Check for API-level error first
+            if response.error:
+                raise ValueError(f"API error: {response.error}")
+
+            gen_response = response.response
+            if not gen_response:
+                raise ValueError("InlinedResponse.response is None")
+
+            # Extract text via GenerateContentResponse.candidates
+            if not gen_response.candidates:
+                raise ValueError("No candidates in response")
+
+            raw_text = gen_response.candidates[0].content.parts[0].text
             if not raw_text:
                 raise ValueError("Empty response text")
 

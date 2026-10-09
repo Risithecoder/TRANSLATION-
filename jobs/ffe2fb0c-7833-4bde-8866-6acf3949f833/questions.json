@@ -1,0 +1,250 @@
+[
+  {
+    "question_no": 1,
+    "raw_text": "1. A floor mat covers an area of 15 m<sup>2</sup>. What is this area in cm<sup>2</sup>?\n(1) 15000 cm<sup>2</sup>\n(2) 1500000 cm<sup>2</sup>\n(3) 1500 cm<sup>2</sup>\n(4) 150000 cm<sup>2</sup>\nAnswer Key:  4\nSolution:\nConversion rule: 1 m = 100 cm\nTherefore, 1 m<sup>2</sup> = 100 × 100 = 10000 cm<sup>2</sup>\nLet A = given area\nA = 15 m<sup>2</sup>\nA = 15 × 10000 cm<sup>2</sup>\nA = 150000 cm<sup>2</sup>\nHence, the correct answer is 150000 cm<sup>2</sup>."
+  },
+  {
+    "question_no": 2,
+    "raw_text": "2. In a coded family relation, '+' means 'is the mother of', '-' means 'is the brother of' and '/' means 'is the daughter of'. If Shalini + Abeer - Kavya / Nitin, then how is Nitin related to Abeer?\n(1) Brother\n(2) Maternal uncle\n(3) Father\n(4) Grandfather\nAnswer Key:  3\nSolution:\nShalini + Abeer means Shalini is the mother of Abeer.\nAbeer - Kavya means Abeer is the brother of Kavya.\nSo, Shalini is also the mother of Kavya.\nKavya / Nitin means Kavya is the daughter of Nitin.\nSo, Nitin is the father of Kavya.\nSince Abeer and Kavya are brother and sister, they have the same parents.\nTherefore, Nitin is also the father of Abeer.\nHence, the correct answer is Father."
+  },
+  {
+    "question_no": 3,
+    "raw_text": "3. What should replace the question mark in the series 18, 22, 30, 42, 58, ?\n(1) 76\n(2) 82\n(3) 74\n(4) 78\nAnswer Key:  4\nSolution:\nConcept used: Compare consecutive terms and continue the pattern of increasing additions.\n22 - 18 = 4\n30 - 22 = 8\n42 - 30 = 12\n58 - 42 = 16\nThe additions are 4, 8, 12, 16\nNext addition = 20\nRequired term = 58 + 20 = 78\nHence, the correct answer is 78."
+  },
+  {
+    "question_no": 4,
+    "raw_text": "4. What should replace the question mark in the series 31, 33, 37, 43, 51, ?\n(1) 63\n(2) 61\n(3) 57\n(4) 59\nAnswer Key:  2\nSolution:\nPattern: Add consecutive even numbers.\n31 + 2 = 33\n33 + 4 = 37\n37 + 6 = 43\n43 + 8 = 51\n51 + 10 = 61\nTherefore, the missing term is 61."
+  },
+  {
+    "question_no": 5,
+    "raw_text": "5. Ritu said, \"Vivek is my mother's only brother. Neha is Vivek's wife, and Ishaan is their son.\" Which one of the following statements cannot be true according to these statements?\n(1) Neha is Ritu's aunt.\n(2) Ishaan is Ritu's cousin.\n(3) Vivek is Ritu's maternal uncle.\n(4) Ishaan is Ritu's brother.\nAnswer Key:  4\nSolution:\nVivek is Ritu's mother's only brother.\nSo Vivek is Ritu's maternal uncle.\nNeha is Vivek's wife.\nSo Neha is Ritu's aunt.\nIshaan is the son of Vivek and Neha.\nSo Ishaan is the son of Ritu's maternal uncle.\nTherefore Ishaan is Ritu's cousin, not her brother.\nHence, the statement that cannot be true is \"Ishaan is Ritu's brother.\""
+  },
+  {
+    "question_no": 6,
+    "raw_text": "6. If '+' and '×' interchange their meanings, what is the value of 9 × 4 + 6 ÷ 3 ?\n(1) 38\n(2) 26\n(3) 15\n(4) 17\nAnswer Key:  4\nSolution:\n'+' and '×' change places.\nSo, 9 × 4 + 6 ÷ 3 becomes 9 + 4 × 6 ÷ 3\nNow use BODMAS.\n4 × 6 = 24\n24 ÷ 3 = 8\n9 + 8 = 17\nHence, the correct answer is 17."
+  },
+  {
+    "question_no": 7,
+    "raw_text": "7. Three of the following pairs show an item and the place with which it is commonly associated. Which pair is different from the others?\n(1) Blackboard – Classroom\n(2) Bell – Temple\n(3) Stretcher – Hospital\n(4) Pillow – Laboratory\nAnswer Key:  4\nSolution:\nThe common pattern is a usual item-place association.\nBlackboard with classroom, stretcher with hospital, and bell with temple all fit this pattern.\nA pillow is normally associated with a bed, bedroom, or resting area, not with a laboratory.\nTherefore, the different pair is Pillow – Laboratory.\nHence, option 4 is correct."
+  },
+  {
+    "question_no": 8,
+    "raw_text": "8. What should replace the question mark in the series 11, 2, 14, 6, 17, 18, 20, ?\n(1) 21\n(2) 36\n(3) 54\n(4) 57\nAnswer Key:  3\nSolution:\nTake the terms at odd positions and even positions separately.\n\nOdd positions: 11, 14, 17, 20\nThese increase by 3 each time.\n\nEven positions: 2, 6, 18, ?\nEach term is 3 times the previous term.\n\n? = 18 × 3\n? = 54\n\nHence, the correct answer is 54."
+  },
+  {
+    "question_no": 9,
+    "raw_text": "9. Given that G < J < N > R, examine the conclusions: I. G < N II. R < J Which of the following is correct?\n(1) II is definitely true, while I is only possible.\n(2) I is definitely true, while II is only possible.\n(3) Both I and II are only possible.\n(4) Both I and II are definitely true.\nAnswer Key:  2\nSolution:\nFrom G < J and J < N, we get G < N.\nSo Conclusion I is definitely true.\n\nFor Conclusion II, we only know that R < N and J < N.\nThis does not fix the order between R and J.\n\nIf J = 5, N = 8 and R = 3, then R < J is true.\nIf J = 5, N = 8 and R = 7, then R < J is false.\n\nSo Conclusion II is only possible, not definitely true.\nHence the correct option is 4."
+  },
+  {
+    "question_no": 10,
+    "raw_text": "10. A die has six different symbols on its faces: heart, star, bell, key, leaf and flag. In one position of the die, heart, star and bell are seen together. In another position of the same die, heart, key and leaf are seen together. Which symbol is on the face opposite to flag?\n(1) Star\n(2) Key\n(3) Heart\n(4) Bell\nAnswer Key:  3\nSolution:\nHeart is the common face in both views.\n\nWith heart, the faces seen together are star, bell, key and leaf.\n\nA face of a die has exactly four adjacent faces and one opposite face.\n\nSo the only face not adjacent to heart is flag.\n\nTherefore, flag is opposite to heart.\n\nHence, the face opposite to flag is Heart."
+  },
+  {
+    "question_no": 11,
+    "raw_text": "11. What should replace the question mark in the series 12, 21, 23, 32, 35, 53, ?\n(1) 85\n(2) 47\n(3) 58\n(4) 56\nAnswer Key:  3\nSolution:\nLook at the terms in pairs.\n12, 21\n23, 32\n35, 53\n\nIn each pair, the second term is the reverse of the first term.\n\nNow look only at the first term of each pair.\n12, 23, 35, ?\n\nThe next such term is formed by taking the second digit first, and then writing the sum of the two digits.\n12 → 23 because 1 + 2 = 3\n23 → 35 because 2 + 3 = 5\n35 → 58 because 3 + 5 = 8\n\nSo the missing term is 58.\n\nHence, the correct option is 58."
+  },
+  {
+    "question_no": 12,
+    "raw_text": "12. A square ABCD is drawn and both its diagonals AC and BD are drawn so that they intersect at O. How many triangles are present in the figure?\n(1) 12\n(2) 8\n(3) 10\n(4) 6\nAnswer Key:  2\nSolution:\nThe diagonals divide the square into 4 small triangles:\nAOB, BOC, COD, and DOA\nSo, small triangles = 4\n\nNow count the larger triangles formed by the outer sides of the square and one diagonal:\nABC, BCD, CDA, and DAB\nSo, larger triangles = 4\n\nTotal triangles = 4 + 4 = 8\n\nNo other triangle is possible because A, O, C lie on one straight line and B, O, D lie on one straight line, so such combinations do not form triangles.\n\nHence, the correct answer is 8, that is, option 3."
+  },
+  {
+    "question_no": 13,
+    "raw_text": "13. A rescue boat covers 36 km downstream and the same distance upstream in a river. If the speed of the boat in still water is 15 km/h and the speed of the stream is 3 km/h, how much more time will the boat take for the upstream journey than for the downstream journey?\n(1) 2 hours\n(2) 3 hours\n(3) 30 minutes\n(4) 1 hour\nAnswer Key:  4\nSolution:\nFormula: Upstream speed = speed in still water - speed of stream\nDownstream speed = speed in still water + speed of stream\nTime = Distance / Speed\n\nLet b = speed of the boat in still water.\nLet s = speed of the stream.\nLet d = distance.\n\nGiven b = 15 km/h\nGiven s = 3 km/h\nGiven d = 36 km\n\nUpstream speed = 15 - 3 = 12 km/h\nDownstream speed = 15 + 3 = 18 km/h\n\nUpstream time = 36 / 12 = 3 hours\nDownstream time = 36 / 18 = 2 hours\n\nTime difference = 3 - 2 = 1 hour\n\nHence, the correct answer is 1 hour."
+  },
+  {
+    "question_no": 14,
+    "raw_text": "14. On a principal of ₹12,500 invested for 2 years, the compound interest compounded annually exceeds the simple interest by ₹80. What is the annual rate of interest?\n(1) 16%\n(2) 4%\n(3) 8%\n(4) 12%\nAnswer Key:  3\nSolution:\nFormula: For 2 years, CI − SI = P × r^2 / 10000\nLet P = principal amount\nLet r = annual rate of interest in percent\n\nP = 12500\nCI − SI = 80\n\n80 = 12500 × r^2 / 10000\n80 = 5r^2 / 4\n320 = 5r^2\nr^2 = 64\nr = 8\n\nTherefore, the annual rate of interest is 8%."
+  },
+  {
+    "question_no": 15,
+    "raw_text": "15. A record room has two shredding machines. Machine P can shred the same batch of files in 8 hours and Machine Q can shred it in 24 hours. If both machines work together at their constant rates, in how many hours will the batch be shredded?\n(1) 16 hours\n(2) 8 hours\n(3) 6 hours\n(4) 4 hours\nAnswer Key:  3\nSolution:\nFormula: If one job is completed in a hours and b hours separately, then the time taken together is given by 1/T = 1/a + 1/b.\nLet a = 8 hours, b = 24 hours, and T = time taken together.\n1/T = 1/8 + 1/24\n1/T = 3/24 + 1/24\n1/T = 4/24\n1/T = 1/6\nT = 6 hours\nHence, the correct answer is 6 hours."
+  },
+  {
+    "question_no": 16,
+    "raw_text": "16. A runway luggage cart moves at a constant speed of 72 km/h. How many metres will it cover in 3 minutes?\n(1) 216 m\n(2) 4320 m\n(3) 3600 m\n(4) 1200 m\nAnswer Key:  3\nSolution:\nFormula: Distance = Speed × Time\nLet v = speed of the cart in m/s.\nLet t = time in seconds.\n\nv = 72 × 5/18\nv = 20 m/s\n\nt = 3 × 60\nt = 180 s\n\nDistance = v × t\nDistance = 20 × 180\nDistance = 3600 m\n\nHence, the correct answer is 3600 m."
+  },
+  {
+    "question_no": 17,
+    "raw_text": "17. A digit-filter changes 731462 to 14 and 928146 to 21. Which one of the following numbers will be changed to 15 by the same rule?\n(1) 652842\n(2) 672541\n(3) 954231\n(4) 864531\nAnswer Key:  4\nSolution:\nThe rule is to add the digits at the 1st, 3rd and 5th positions from the left.\n731462 becomes 7 + 1 + 6 = 14\n928146 becomes 9 + 8 + 4 = 21\nSo we need the option whose 1st, 3rd and 5th digits add up to 15.\n864531 gives 8 + 4 + 3 = 15\nHence, the correct option is 864531."
+  },
+  {
+    "question_no": 18,
+    "raw_text": "18. Pranay is the brother of Vedika, and Vedika is the mother of Rishit. How is Pranay related to Rishit?\n(1) Father\n(2) Grandfather\n(3) Maternal uncle\n(4) Paternal uncle\nAnswer Key:  3\nSolution:\nPranay is the brother of Vedika, so Pranay and Vedika are siblings.\nVedika is the mother of Rishit.\nSo, Pranay is the brother of Rishit's mother.\nThe brother of one's mother is called the maternal uncle.\nTherefore, Pranay is Rishit's maternal uncle.\nHence, the correct option is Maternal uncle."
+  },
+  {
+    "question_no": 19,
+    "raw_text": "19. At a cultural fair, a guide first faces the setting sun. He then turns left, takes a U-turn, turns right, and finally turns right again. In which direction is he facing at the end?\n(1) East\n(2) West\n(3) South\n(4) North\nAnswer Key:  3\nSolution:\nFacing the setting sun means facing West.\nTurning left from West makes him face South.\nTaking a U-turn from South makes him face North.\nTurning right from North makes him face East.\nTurning right again from East makes him face South.\nHence, he is facing South at the end.\nTherefore, the correct option is South."
+  },
+  {
+    "question_no": 20,
+    "raw_text": "20. In a queue for document verification, Renu is 5th from the front. Kabir stands 4 places behind Renu. Tia stands 2 places ahead of Kabir. Manoj stands immediately behind Tia. Who is nearest to the back end of the queue?\n(1) Tia\n(2) Renu\n(3) Manoj\n(4) Kabir\nAnswer Key:  4\nSolution:\nRenu is 5th from the front.\nKabir stands 4 places behind Renu, so Kabir is 9th from the front.\nTia stands 2 places ahead of Kabir, so Tia is 7th from the front.\nManoj stands immediately behind Tia, so Manoj is 8th from the front.\nNow compare their positions from the front:\nRenu = 5th\nTia = 7th\nManoj = 8th\nKabir = 9th\nThe person nearest to the back end will be the one farthest from the front among these four.\nKabir is farthest from the front.\nHence, the correct option is Kabir."
+  },
+  {
+    "question_no": 21,
+    "raw_text": "21. If x = 6 and y = 4, then the value of 2x - y + 5 is:\n(1) 15\n(2) 13\n(3) 21\n(4) 9\nAnswer Key:  2\nSolution:\nLet x = 6\nLet y = 4\nRequired value = 2x - y + 5\n= 2 × 6 - 4 + 5\n= 12 - 4 + 5\n= 8 + 5\n= 13\nTherefore, the correct answer is 13."
+  },
+  {
+    "question_no": 22,
+    "raw_text": "22. In a certain code language, 'cedar ivory plume' is written as 'qa bi so', 'ivory spark raven' is written as 'bi lu ke', and 'plume spark' is written as 'so lu'. Which of the following can represent 'raven cedar plume' in that language?\n(1) lu qa so\n(2) ke bi so\n(3) ke qa so\n(4) qa bi ke\nAnswer Key:  3\nSolution:\nFrom 'cedar ivory plume' = 'qa bi so' and 'plume spark' = 'so lu', the common code for plume is so.\nFrom 'plume spark' = 'so lu', the remaining code lu is for spark.\nNow in 'ivory spark raven' = 'bi lu ke', since lu is spark, the remaining two codes are for ivory and raven.\nThe common word between the first and second groups is ivory, so bi = ivory.\nTherefore ke = raven.\nNow in 'cedar ivory plume' = 'qa bi so', with bi = ivory and so = plume, the remaining code qa = cedar.\nSo 'raven cedar plume' can be represented by ke, qa and so.\nHence the correct answer is ke qa so."
+  },
+  {
+    "question_no": 23,
+    "raw_text": "23. If in the word HARMONIC, the first two letters are moved to the end of the word in the same order and then the entire new arrangement is written in reverse order, which letter will be 6th from the left end?\n(1) C\n(2) M\n(3) N\n(4) O\nAnswer Key:  4\nSolution:\nThe word is HARMONIC.\nAfter moving the first two letters to the end, it becomes RMONICHA.\nNow reverse this arrangement.\nAHCINOMR\nCount from the left end:\n1st = A\n2nd = H\n3rd = C\n4th = I\n5th = N\n6th = O\nSo, the 6th letter from the left end is O.\nHence, the correct answer is Option C."
+  },
+  {
+    "question_no": 24,
+    "raw_text": "24. Nepal : Nepali :: Bhutan : ?\n(1) Bhutanese\n(2) Bhutaner\n(3) Bhutani\n(4) Bhutanian\nAnswer Key:  1\nSolution:\nNepal : Nepali shows the relation between a place and the people belonging to that place.\nSo we need the inhabitant word for Bhutan.\nA person from Bhutan is called Bhutanese.\nHence, the correct answer is Bhutanese.\nBhutani is a common trap because it copies the ending of Nepali, but it is not the correct demonym."
+  },
+  {
+    "question_no": 25,
+    "raw_text": "25. A cash pouch contains n ₹20 notes and n ₹5 coins. If the total amount in the pouch is ₹125, what is the value of n?\n(1) 6\n(2) 4\n(3) 25\n(4) 5\nAnswer Key:  4\nSolution:\nFormula: Total amount = (number of ₹20 notes × 20) + (number of ₹5 coins × 5)\nLet n = number of ₹20 notes = number of ₹5 coins\n20n + 5n = 125\n25n = 125\nn = 125 ÷ 25\nn = 5\nHence, the value of n is 5."
+  },
+  {
+    "question_no": 26,
+    "raw_text": "26. Three alert sirens in a monitoring room sound at intervals of 4 minutes, 6 minutes and 8 minutes respectively. If they sound together at 10:00 AM, at what time will they next sound together?\n(1) 10:48 AM\n(2) 10:18 AM\n(3) 10:24 AM\n(4) 10:08 AM\nAnswer Key:  3\nSolution:\nFormula: Next common sounding interval = LCM of the given intervals.\nLet a = 4 minutes, b = 6 minutes, and c = 8 minutes.\n4 = 2 × 2\n6 = 2 × 3\n8 = 2 × 2 × 2\nLCM(a, b, c) = 2 × 2 × 2 × 3 = 24 minutes\n10:00 AM + 24 minutes = 10:24 AM\nHence, the correct answer is 10:24 AM."
+  },
+  {
+    "question_no": 27,
+    "raw_text": "27. In a handmade-soap business, Mehul invested ₹12,000 at the beginning of the year, Naina joined after 4 months with ₹18,000, and Rafi joined after 8 months with ₹24,000. In what ratio should the profit at the end of the year be divided among Mehul, Naina and Rafi?\n(1) 3 : 2 : 1\n(2) 3 : 3 : 2\n(3) 2 : 3 : 4\n(4) 3 : 3 : 4\nAnswer Key:  2\nSolution:\nFormula: Profit share ratio = Capital × Time\nLet M, N and R be the effective investments of Mehul, Naina and Rafi respectively.\nM = 12000 × 12 = 144000\nN = 18000 × (12 - 4) = 18000 × 8 = 144000\nR = 24000 × (12 - 8) = 24000 × 4 = 96000\nRequired ratio = 144000 : 144000 : 96000\n= 3 : 3 : 2\nHence, the correct option is 3 : 3 : 2."
+  },
+  {
+    "question_no": 28,
+    "raw_text": "28. A compact DI panel for a municipal waste report shows the percentage share of waste collected in one week as wet waste = 32%, dry waste = 27%, sanitary waste = 11%, and e-waste = remaining share. What is the percentage share of e-waste?\n(1) 41%\n(2) 31%\n(3) 30%\n(4) 29%\nAnswer Key:  3\nSolution:\nFormula: Missing percentage = 100% − (sum of known percentages)\nLet x = percentage share of e-waste.\nx = 100 − (32 + 27 + 11)\nx = 100 − 70\nx = 30\nHence, the correct answer is 30%."
+  },
+  {
+    "question_no": 29,
+    "raw_text": "29. Statements: Only chefs are bakers. Only a few bakers are vloggers. Conclusions: I. Some vloggers are chefs. II. Some bakers are not chefs. Which of the following is correct?\n(1) Neither conclusion I nor II follows\n(2) Only conclusion II follows\n(3) Only conclusion I follows\n(4) Both conclusions I and II follow\nAnswer Key:  3\nSolution:\nOnly chefs are bakers means all bakers are chefs.\nOnly a few bakers are vloggers means some bakers are vloggers and some bakers are not vloggers.\nFrom these two statements, the bakers who are vloggers must also be chefs.\nSo, some vloggers are chefs. Conclusion I follows.\nConclusion II does not follow because all bakers are chefs.\nHence, only conclusion I follows."
+  },
+  {
+    "question_no": 30,
+    "raw_text": "30. Which term should replace the question mark in the series BAM, CEN, DIP, FOQ, ?\n(1) GOR\n(2) HUR\n(3) GUS\n(4) GUR\nAnswer Key:  4\nSolution:\nLook at each position separately.\nFirst letters: B, C, D, F, ?\nThese move to the next consonant each time, so after F comes G.\nMiddle letters: A, E, I, O, ?\nThese are vowels in order, so the next vowel is U.\nLast letters: M, N, P, Q, ?\nThese also move to the next consonant each time, so after Q comes R.\nSo the next term is GUR.\nHence, the correct option is GUR."
+  },
+  {
+    "question_no": 31,
+    "raw_text": "31. In three of the following options, the words are arranged in the same order in which they would appear in an English dictionary, while in one option the arrangement is incorrect. Identify that option.\n(1) prefer, prefix, prelude, premium\n(2) marble, marine, margin, market\n(3) silent, silk, silver, simple\n(4) candle, candy, canine, cannon\nAnswer Key:  2\nSolution:\nThe incorrect arrangement is Option 3.\n\nLook at the words in Option 3:\nmarble, marine, margin, market\n\nAll four words begin with \"mar\".\nNow compare the next letters.\nIn marble, the 4th letter is b.\nIn marine, the 4th letter is i.\nIn margin, the 4th letter is g.\nIn market, the 4th letter is k.\n\nIn dictionary order, b comes before g, g comes before i, and i comes before k.\nSo the correct order should be:\nmarble, margin, marine, market\n\nBut in the given sequence, marine is placed before margin.\nTherefore, Option 3 is the incorrectly arranged set."
+  },
+  {
+    "question_no": 32,
+    "raw_text": "32. What is the simplified value of { (√8 + √2)^2 + (√8 - √2)^2 } / { (√8 + √2)^2 - (√8 - √2)^2 } ?\n(1) 4/5\n(2) 5/4\n(3) 5/2\n(4) 3/4\nAnswer Key:  2\nSolution:\nFormula used:\n(a + b)^2 = a^2 + 2ab + b^2\n(a - b)^2 = a^2 - 2ab + b^2\n\nLet a = √8 and b = √2\n\n{ (√8 + √2)^2 + (√8 - √2)^2 } / { (√8 + √2)^2 - (√8 - √2)^2 }\n= { (a + b)^2 + (a - b)^2 } / { (a + b)^2 - (a - b)^2 }\n= { (a^2 + 2ab + b^2) + (a^2 - 2ab + b^2) } / { (a^2 + 2ab + b^2) - (a^2 - 2ab + b^2) }\n= (2a^2 + 2b^2) / 4ab\n= [2(8) + 2(2)] / [4(√8)(√2)]\n= (16 + 4) / 4√16\n= 20 / 16\n= 5 / 4\n\nTherefore, the simplified value is 5/4."
+  },
+  {
+    "question_no": 33,
+    "raw_text": "33. In a strange calculator, LAM, TIV and NOR stand for three different basic operations among +, − and ÷. If 18 NOR 3 = 6 and 9 LAM 5 TIV 2 = 12, then what is the value of {22 TIV [6 LAM (12 NOR 3)]} NOR 2?\n(1) 10\n(2) 6\n(3) 12\n(4) 8\nAnswer Key:  2\nSolution:\n18 NOR 3 = 6\nSo NOR means ÷\n\n9 LAM 5 TIV 2 = 12\nOnly 9 + 5 − 2 = 12\nSo LAM means + and TIV means −\n\nNow substitute in the expression:\n{22 TIV [6 LAM (12 NOR 3)]} NOR 2\n= {22 − [6 + (12 ÷ 3)]} ÷ 2\n= {22 − [6 + 4]} ÷ 2\n= {22 − 10} ÷ 2\n= 12 ÷ 2\n= 6\n\nHence, the correct option is 6."
+  },
+  {
+    "question_no": 34,
+    "raw_text": "34. The average score of 18 cadets in a drill test is 22 marks. After 2 more cadets are included, the average score becomes 24 marks. What is the average score of the 2 cadets added later?\n(1) 42\n(2) 24\n(3) 40\n(4) 48\nAnswer Key:  1\nSolution:\nFormula: Average = Total score / Number of cadets\nSo, Total score = Average × Number of cadets\nLet S1 = total score of the first 18 cadets\nLet S2 = total score of all 20 cadets\nS1 = 18 × 22 = 396\nS2 = 20 × 24 = 480\nTotal score of the 2 added cadets = 480 - 396 = 84\nAverage score of the 2 added cadets = 84 ÷ 2 = 42\nHence, the correct answer is option 3."
+  },
+  {
+    "question_no": 35,
+    "raw_text": "35. A simple-interest deposit is worth ₹600 more at the end of 9 years than at the end of 4 years. If the rate is 4% per annum, what was the principal?\n(1) ₹3750\n(2) ₹3000\n(3) ₹2500\n(4) ₹2400\nAnswer Key:  2\nSolution:\nFormula:\nDifference between two amounts at simple interest = P × R × (t2 − t1) / 100\n\nLet\nP = principal\nR = 4\nt2 = 9 years\nt1 = 4 years\n\n600 = P × 4 × (9 − 4) / 100\n600 = P × 4 × 5 / 100\n600 = P × 20 / 100\n600 = P / 5\nP = 600 × 5\nP = 3000\n\nPrincipal = ₹3000\nHence, the correct answer is ₹3000."
+  },
+  {
+    "question_no": 36,
+    "raw_text": "36. In an unfolded cube net, four squares in one horizontal row from left to right are marked Spiral, Bell, Crown and Leaf; a square marked Dot is directly above Bell, and a square marked Arrow is directly below Crown. When this net is folded to form a cube, which of the following can be the faces on the top, front and right respectively?\n(1) Bell, Dot, Crown\n(2) Dot, Bell, Crown\n(3) Crown, Bell, Dot\n(4) Dot, Leaf, Crown\nAnswer Key:  2\nSolution:\nTake Bell as the reference face.\nSpiral is attached to the left of Bell.\nCrown is attached to the right of Bell.\nDot is attached above Bell.\nLeaf is attached beyond Crown, so after folding it comes to the face opposite Bell.\nArrow is attached below Crown, so after folding it comes to the face opposite Dot.\nThus the opposite pairs are:\nBell opposite Leaf\nDot opposite Arrow\nSpiral opposite Crown\nNow look at the corner formed around Bell.\nSince Dot is above Bell and Crown is to the right of Bell in the net, these three faces can appear together as:\nTop = Dot\nFront = Bell\nRight = Crown\nHence the correct option is Dot, Bell, Crown."
+  },
+  {
+    "question_no": 37,
+    "raw_text": "37. Some trainees are seated in a straight row facing north. Juhi is 6th from the left end and Naman is 5th from the right end. Exactly two trainees sit between Juhi and Naman. What is the minimum possible number of trainees in the row?\n(1) 7\n(2) 11\n(3) 13\n(4) 8\nAnswer Key:  1\nSolution:\nJuhi is 6th from the left end.\nExactly two trainees sit between Juhi and Naman.\nSo Naman can be either 3 places to the left of Juhi or 3 places to the right of Juhi.\n\nCase 1:\nNaman is 3rd from the left end.\nHe is also 5th from the right end.\nTotal number of trainees = 3 + 5 - 1 = 7.\n\nCase 2:\nNaman is 9th from the left end.\nHe is also 5th from the right end.\nTotal number of trainees = 9 + 5 - 1 = 13.\n\nThe possible row lengths are 7 and 13.\nThe minimum possible number of trainees in the row is 7.\nHence, the correct option is 7."
+  },
+  {
+    "question_no": 38,
+    "raw_text": "38. In the following city-river combinations, identify the odd one out.\n(1) Jaipur – Sabarmati\n(2) Patna – Ganga\n(3) Guwahati – Brahmaputra\n(4) Delhi – Yamuna\nAnswer Key:  1\nSolution:\nThe odd one out is Jaipur – Sabarmati.\n\nDelhi is associated with the Yamuna, Guwahati with the Brahmaputra, and Patna with the Ganga.\nJaipur is not associated with the Sabarmati River. Sabarmati is linked with Ahmedabad.\nTherefore, Jaipur – Sabarmati is the different pair."
+  },
+  {
+    "question_no": 39,
+    "raw_text": "39. In the English alphabet arranged from A to Z, which letter is 5th to the left of the letter that is 8th from the right end?\n(1) P\n(2) N\n(3) M\n(4) O\nAnswer Key:  2\nSolution:\nThe 8th letter from the right end is the same as the 19th letter from the left end because 26 - 8 + 1 = 19.\nThe 19th letter of the alphabet is S.\nNow move 5 places to the left of S:\nR, Q, P, O, N\nSo the required letter is N.\nHence, the correct answer is Option 2."
+  },
+  {
+    "question_no": 40,
+    "raw_text": "40. Maya starts from a clinic, walks 9 m south, then turns left and walks 15 m. After that, she walks 3 m back on the same path, moving towards the clinic. How far and in which direction is she now from the clinic?\n(1) 15 m south-east\n(2) 15 m north-east\n(3) 12 m south-east\n(4) 21 m south-east\nAnswer Key:  1\nSolution:\nTake the clinic as the starting point.\n\nMaya first walks 9 m south.\nSo she is 9 m south of the clinic.\n\nShe then turns left.\nWhen a person is facing south, a left turn means east.\nSo she walks 15 m east.\n\nAfter that, she walks 3 m back on the same path.\nSo her eastward movement becomes 15 - 3 = 12 m.\n\nNow her final position is:\n12 m east of the clinic\n9 m south of the clinic\n\nShortest distance from the clinic = sqrt(12^2 + 9^2)\n= sqrt(144 + 81)\n= sqrt(225)\n= 15 m\n\nSince she is east and south of the clinic, the direction is south-east.\n\nTherefore, the correct option is 15 m south-east."
+  },
+  {
+    "question_no": 41,
+    "raw_text": "41. In a certain code language, words are coded in the same order. 'cedar prism wagon' is written as 'xo 17 ba', 'prism wagon turbine' is written as '17 ba ku', and 'turbine cedar' is written as 'ku xo'. What does the code 'ba ku xo' stand for?\n(1) wagon cedar turbine\n(2) wagon turbine cedar\n(3) prism turbine cedar\n(4) cedar turbine wagon\nAnswer Key:  2\nSolution:\nSince the words are coded in the same order,\nFrom \"turbine cedar\" = \"ku xo\", ku stands for turbine and xo stands for cedar.\nNow look at \"prism wagon turbine\" = \"17 ba ku\".\nThe last code ku is already known as turbine.\nSo 17 and ba must stand for prism and wagon.\nNow compare this with \"cedar prism wagon\" = \"xo 17 ba\".\nSince xo is cedar, 17 = prism and ba = wagon.\nTherefore, \"ba ku xo\" stands for wagon turbine cedar.\nHence, the correct answer is option 2."
+  },
+  {
+    "question_no": 42,
+    "raw_text": "42. In a Venn diagram of two overlapping sets A and B, which of the following represents the region containing elements that belong to both A and B?\n(1) A ∪ B\n(2) A' ∩ B'\n(3) A − B\n(4) A ∩ B\nAnswer Key:  4\nSolution:\nThe required region must contain elements that are in A and also in B.\nThat means we need the common part shared by both sets.\nThe common part of two sets is written as A ∩ B.\nHence, the correct answer is A ∩ B.\nTherefore, option 3 is correct."
+  },
+  {
+    "question_no": 43,
+    "raw_text": "43. What should replace the question mark in the series 5, 8, 14, 26, 50, ?\n(1) 86\n(2) 98\n(3) 74\n(4) 97\nAnswer Key:  2\nSolution:\nLook at the differences between consecutive terms.\n8 - 5 = 3\n14 - 8 = 6\n26 - 14 = 12\n50 - 26 = 24\nThe differences are 3, 6, 12, 24.\nEach difference is double the previous one.\nSo the next difference will be 48.\nNext term = 50 + 48 = 98\nHence, the correct answer is 98."
+  },
+  {
+    "question_no": 44,
+    "raw_text": "44. Under a certain coding rule, CJ is written as 32 and EO is written as 77. How will GL be written under the same rule?\n(1) 84\n(2) 86\n(3) 21\n(4) 93\nAnswer Key:  2\nSolution:\nC is the 3rd letter and J is the 10th letter.\n3 × 10 + 2 = 32\n\nE is the 5th letter and O is the 15th letter.\n5 × 15 + 2 = 77\n\nSo the rule is: multiply the alphabetical positions of the two letters and add 2.\n\nG is the 7th letter and L is the 12th letter.\n7 × 12 + 2 = 84 + 2 = 86\n\nHence, the correct answer is 86."
+  },
+  {
+    "question_no": 45,
+    "raw_text": "45. In the number row 42, 57, 64, 31, 86, 73, 48, 95 and 26, form Group I with the numbers whose units digit is 2, 3, 5 or 7 and Group II with the remaining numbers. Write Group I in the same order as in the original row and Group II in reverse order. Now form a new row by taking one number from Group I, then one from Group II, and continue alternately starting with Group I; if one group gets exhausted, write the remaining numbers of the other group at the end. Which number will be third to the right of the number that is immediately to the left of 73 in the new row?\n(1) 86\n(2) 57\n(3) 95\n(4) 31\nAnswer Key:  3\nSolution:\nNumbers ending in 2, 3, 5 or 7 form Group I.\nGroup I = 42, 57, 73, 95\nGroup II = 64, 31, 86, 48, 26\nGroup II in reverse order = 26, 48, 86, 31, 64\nNow take one from Group I, then one from Group II, alternately:\n42, 26, 57, 48, 73, 86, 95, 31, 64\nThe number immediately to the left of 73 is 48.\nTo the right of 48:\n1st = 73\n2nd = 86\n3rd = 95\nSo, the correct answer is 95."
+  },
+  {
+    "question_no": 46,
+    "raw_text": "46. If A is the brother of B, B is the mother of C and C is the sister of D, then how is A related to D?\n(1) Maternal uncle\n(2) Grandfather\n(3) Brother\n(4) Father\nAnswer Key:  1\nSolution:\nA is the brother of B.\nB is the mother of C.\nC is the sister of D, so C and D have the same mother.\nTherefore, B is also the mother of D.\nNow A is the brother of D's mother.\nSo, A is D's maternal uncle.\nHence, the correct option is Maternal uncle."
+  },
+  {
+    "question_no": 47,
+    "raw_text": "47. At a luggage outlet, the marked price of a trolley bag is 4/3 of its cost price. If the cost price is ₹750 and the shop offers a 20% discount on the marked price, what is the selling price of the trolley bag?\n(1) ₹800\n(2) ₹850\n(3) ₹600\n(4) ₹1000\nAnswer Key:  1\nSolution:\nFormula:\nMP = CP × given fraction\nSP = MP × (100 - discount%)/100\nLet CP = cost price, MP = marked price, SP = selling price.\nCP = ₹750\nMP = (4/3) × 750\nMP = ₹1000\nSP = 1000 × 80/100\nSP = ₹800\nHence, the selling price is ₹800."
+  },
+  {
+    "question_no": 48,
+    "raw_text": "48. A club's annual membership fee is increased by 20% and then reduced by 10%. What is the net percentage change in the fee?\n(1) 8% increase\n(2) 10% increase\n(3) 12% increase\n(4) 8% decrease\nAnswer Key:  1\nSolution:\nFormula:\nFor successive percentage changes of p% and q%, net percentage change = p + q + (p × q)/100, where a decrease is taken as negative.\n\nLet p = 20 and q = -10.\n\nNet percentage change\n= 20 + (-10) + (20 × -10)/100\n= 10 - 2\n= 8\n\nSo, the net change is 8% increase."
+  },
+  {
+    "question_no": 49,
+    "raw_text": "49. In a village fair schedule, the banner setup is done 2 days before Saturday, the sound test is held 10 days after the banner setup, and the prize list is released 4 days before the sound test. On which day is the prize list released?\n(1) Thursday\n(2) Wednesday\n(3) Sunday\n(4) Tuesday\nAnswer Key:  2\nSolution:\n2 days before Saturday is Thursday.\n\n10 days after Thursday means 7 days after Thursday and then 3 more days after Thursday.\nSo the sound test is on Sunday.\n\n4 days before Sunday is Wednesday.\n\nTherefore, the prize list is released on Wednesday.\n\nHence, the correct option is Wednesday."
+  },
+  {
+    "question_no": 50,
+    "raw_text": "50. During a route drill, Nihar is standing at one spot facing North-East. He turns right by 135°, then turns left by 90°, and finally turns right by 45°. In which direction is he facing at the end?\n(1) North-East\n(2) East\n(3) South-East\n(4) South-West\nAnswer Key:  3\nSolution:\nHe starts facing North-East.\nA right turn of 135° from North-East makes him face South.\nA left turn of 90° from South makes him face East.\nA right turn of 45° from East makes him face South-East.\nSo, at the end, he is facing South-East.\nHence, the correct answer is South-East."
+  },
+  {
+    "question_no": 51,
+    "raw_text": "51. If the letters of the word SPARKLING are rearranged by first writing the letters at odd-numbered positions from right to left and then the letters at even-numbered positions from left to right, and then moving the last letter of this new arrangement to the front, which letter will be 5th from the left end in the final arrangement?\n(1) A\n(2) I\n(3) S\n(4) N\nAnswer Key:  1\nSolution:\nWrite the letters of SPARKLING with positions:\n1-S, 2-P, 3-A, 4-R, 5-K, 6-L, 7-I, 8-N, 9-G\nOdd-position letters are S, A, K, I, G.\nFrom right to left, these become G, I, K, A, S.\nEven-position letters are P, R, L, N.\nPlacing them after the odd-position letters gives G I K A S P R L N.\nNow move the last letter N to the front.\nFinal arrangement = N G I K A S P R L\nThe 5th letter from the left end is A.\nHence, the correct option is A."
+  },
+  {
+    "question_no": 52,
+    "raw_text": "52. A mini DI card shows the number of loan applications cleared in four sectors of a district cooperative bank: agriculture = 50, dairy = 40, fisheries = 60 and small trade = 30. The number of applications cleared in the agriculture sector is what percent of those cleared in the dairy sector?"
+  },
+  {
+    "question_no": 0,
+    "raw_text": "(1) 125%\n(2) 120%\n(3) 100%\n(4) 80%\nAnswer Key:  1\nSolution:\nFormula:\nRequired percent = (value of first sector / value of second sector) × 100\n\nLet A = applications cleared in the agriculture sector = 50\nLet D = applications cleared in the dairy sector = 40\n\nRequired percent = (A / D) × 100\n= (50 / 40) × 100\n= (5 / 4) × 100\n= 125%\n\nSo, the correct answer is 125%."
+  },
+  {
+    "question_no": 53,
+    "raw_text": "53. In a monthly warehouse summary, seed sacks dispatched were 68 in March and 83 in April. What was the absolute month-on-month increase in dispatches?\n(1) 15\n(2) 151\n(3) 14\n(4) 83\nAnswer Key:  1\nSolution:\nFormula: Absolute change = Later period value − Earlier period value\nLet M = dispatches in March = 68\nLet A = dispatches in April = 83\nAbsolute increase = A − M\n= 83 − 68\n= 15\nHence, the correct answer is 15."
+  },
+  {
+    "question_no": 54,
+    "raw_text": "54. Some inspection slips are numbered tags. All numbered tags are verified entries. A clerk concludes, 'No inspection slip is a verified entry.' How should this conclusion be judged?\n(1) The clerk's conclusion is wrong because some inspection slips must be verified entries.\n(2) The clerk's conclusion cannot be judged from the given statements.\n(3) The clerk's conclusion is correct.\n(4) The clerk's conclusion may still be correct because only some inspection slips are numbered tags.\nAnswer Key:  1\nSolution:\nSome inspection slips are numbered tags.\nAll numbered tags are verified entries.\nSo the inspection slips that are numbered tags will also be verified entries.\nThis means some inspection slips are verified entries.\nTherefore, the claim 'No inspection slip is a verified entry' cannot be true.\nHence, the correct answer is Option 2."
+  },
+  {
+    "question_no": 55,
+    "raw_text": "55. In a nursery bed, the number of marigold saplings is thrice the number of rose saplings. If there are 18 more marigold saplings than rose saplings, how many saplings of these two types are there altogether?\n(1) 9\n(2) 18\n(3) 36\n(4) 27\nAnswer Key:  3\nSolution:\nConcept used: If one quantity is thrice another, their ratio is 3 : 1.\nLet the number of rose saplings = x.\nLet the number of marigold saplings = 3x.\nDifference = 3x - x = 18\n2x = 18\nx = 9\nTotal saplings = 3x + x\n= 4x\n= 4 × 9\n= 36\nHence, the correct answer is 36."
+  },
+  {
+    "question_no": 56,
+    "raw_text": "56. The monthly salaries of 9 clerks in an office are in arithmetic progression from lowest to highest. If the lowest salary is ₹18,000 and the highest salary is ₹34,000, what is the total monthly salary of all the clerks?\n(1) ₹2,43,000\n(2) ₹2,34,000\n(3) ₹4,68,000\n(4) ₹2,08,000\nAnswer Key:  2\nSolution:\nFormula: Sum of n terms of an AP, Sn = n/2 × (a + l)\nLet n = 9, where n is the number of clerks\nLet a = ₹18,000, where a is the first salary\nLet l = ₹34,000, where l is the last salary\nS9 = 9/2 × (18,000 + 34,000)\nS9 = 9/2 × 52,000\nS9 = 9 × 26,000\nS9 = ₹2,34,000\nHence, the correct answer is ₹2,34,000."
+  },
+  {
+    "question_no": 57,
+    "raw_text": "57. A geometric sequence starts with 4 and has common ratio 3. What is its 4th term?\n(1) 324\n(2) 12\n(3) 36\n(4) 108\nAnswer Key:  4\nSolution:\nFormula: Tn = a × r^(n - 1)\nLet a = first term, r = common ratio, and n = term number.\nGiven a = 4, r = 3, n = 4\nT4 = 4 × 3^(4 - 1)\nT4 = 4 × 3^3\nT4 = 4 × 27\nT4 = 108\nHence, the correct answer is 108."
+  },
+  {
+    "question_no": 58,
+    "raw_text": "58. Poonam, Javed and Kiran can separately complete the same set of survey summaries in 2√3 hours, 3√3 hours and 6√3 hours respectively. If all three work together at their constant rates, in how many hours will the work be completed?\n(1) 2√3 hours\n(2) 11√3 hours\n(3) √3 hours\n(4) 1/√3 hours\nAnswer Key:  3\nSolution:\nFormula:\nIf three persons take a, b and c hours separately, then\n1/T = 1/a + 1/b + 1/c\nwhere T = time taken together.\n\nLet\na = 2√3 hours\nb = 3√3 hours\nc = 6√3 hours\n\n1/T = 1/(2√3) + 1/(3√3) + 1/(6√3)\n\n1/T = (3 + 2 + 1)/(6√3)\n\n1/T = 6/(6√3)\n\n1/T = 1/√3\n\nT = √3 hours\n\nHence, the correct answer is √3 hours."
+  },
+  {
+    "question_no": 59,
+    "raw_text": "59. Statement: After using two new revision apps for a month, Kavita scored higher in her mock tests. She then said, \"Digital revision apps always improve the performance of every student.\" Which of the following best points out the weakness in Kavita's conclusion?\n(1) It assumes that students cannot improve their mock-test scores without private tuition.\n(2) It confuses doing well in mock tests with attending regular classes.\n(3) It concludes that students who do not use apps can never score well.\n(4) It generalizes from a very limited personal experience to all students and uses extreme words like \"always\" and \"every student.\"\nAnswer Key:  4\nSolution:\nKavita observed only her own result after using two revision apps for one month.\nFrom that small experience, she concluded that digital revision apps always improve the performance of every student.\nThat is too broad a conclusion because one person's limited experience cannot prove what will happen for all students.\nThe words \"always\" and \"every student\" make the statement extreme and therefore weaker.\nTherefore, Option 1 is the correct answer."
+  },
+  {
+    "question_no": 60,
+    "raw_text": "60. Using the digits 1, 2, 7 and 8 exactly once, which of the following 4-digit numbers is divisible by 4?\n(1) 8127\n(2) 1278\n(3) 2781\n(4) 7812\nAnswer Key:  4\nSolution:\nDivisibility rule for 4: A number is divisible by 4 if the number formed by its last two digits is divisible by 4.\n1278 → last two digits = 78\n78 ÷ 4 is not a whole number\n7812 → last two digits = 12\n12 ÷ 4 = 3\n8127 → last two digits = 27\n27 ÷ 4 is not a whole number\n2781 → last two digits = 81\n81 ÷ 4 is not a whole number\nTherefore, 7812 is divisible by 4.\nHence, the correct option is 7812."
+  },
+  {
+    "question_no": 61,
+    "raw_text": "61. A dry-fruit seller buys cashews at ₹120 per 1000 g and sells them at the same rate, but for every sale of 1000 g he actually gives only 800 g. What is his profit on each such sale?\n(1) ₹30\n(2) ₹20\n(3) ₹24\n(4) ₹18\nAnswer Key:  3\nSolution:\nFormula:\nProfit = Selling Price − Cost Price\n\nLet R = price of 1000 g = ₹120.\nLet q = actual quantity given in one sale = 800 g.\n\nCost price of 800 g = 120 × 800/1000\n= ₹96\n\nSelling price of that sale = ₹120\n\nProfit = 120 − 96\n= ₹24\n\nHence, the correct answer is ₹24."
+  }
+]

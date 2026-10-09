@@ -18,7 +18,9 @@ import text_extractor
 import docx_builder
 # import cache_manager
 import batch_translator
+import translator
 import email_sender
+import concurrent.futures
 
 # ── App setup ────────────────────────────────────────────────────────────────
 app = FastAPI()
@@ -126,9 +128,9 @@ def extract_stream_generator(job_id: str):
         def _run_extraction(path=upload_path, k=key):
             try:
                 print(f"[extraction] Starting for job {job_id}")
-                qs = text_extractor.extract_questions(path)
-                print(f"[extraction] Done — {len(qs)} questions")
-                thread_results[k] = {"result": qs}
+                qs, imgs = text_extractor.extract_questions(path)
+                print(f"[extraction] Done — {len(qs)} questions, {len(imgs)} images")
+                thread_results[k] = {"result": qs, "images": imgs}
             except BaseException as ex:
                 import traceback
                 tb = traceback.format_exc()
@@ -155,11 +157,13 @@ def extract_stream_generator(job_id: str):
             raise Exception(f"{res['error']}{tb_hint}")
 
         all_questions = res["result"]
+        images = res.get("images", [])
         if not all_questions:
             raise Exception("No questions found in the document.")
 
-        # Save extracted questions
+        # Save extracted questions and images
         save_json(job_id, "questions.json", all_questions)
+        save_json(job_id, "images.json", images)
 
         # Auto-batch: generate default batch breaks every DEFAULT_BATCH_SIZE questions
         batch_breaks = _auto_batch_breaks(all_questions)
@@ -278,11 +282,37 @@ def split_into_batches(questions: list, batch_breaks: list) -> list:
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# ROUTE 6 — Batch API: Submit batch translation job
-# POST /api/batch-translate/{job_id}
+# ROUTE 6 — Translation API: Submit translation job
+# POST /api/start-translation/{job_id}
 # ═════════════════════════════════════════════════════════════════════════════
-@app.post("/api/batch-translate/{job_id}")
-async def batch_translate(job_id: str):
+def _run_realtime_translation(job_id: str, batches: list, language: str, meta: dict):
+    meta["status"] = "realtime_running"
+    save_json(job_id, "meta.json", meta)
+    batch_outputs = [None] * len(batches)
+    try:
+        def _process_batch(idx):
+            return idx, translator.translate_batch(batches[idx], language)
+            
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            futures = [executor.submit(_process_batch, idx) for idx in range(len(batches))]
+            for future in concurrent.futures.as_completed(futures):
+                idx, result = future.result()
+                batch_outputs[idx] = result
+                
+        save_json(job_id, "realtime_outputs.json", batch_outputs)
+        meta["status"] = "realtime_succeeded"
+        save_json(job_id, "meta.json", meta)
+    except Exception as e:
+        print(f"[realtime-translate] Error in background task: {e}")
+        meta["status"] = "realtime_failed"
+        meta["error"] = str(e)
+        save_json(job_id, "meta.json", meta)
+
+@app.post("/api/start-translation/{job_id}")
+async def start_translation(job_id: str, request: Request, background_tasks: BackgroundTasks):
+    body = await request.json()
+    mode = body.get("mode", "batch")
+
     questions_file = job_path(job_id, "questions.json")
     if not os.path.exists(questions_file):
         raise HTTPException(400, "Questions not found. Run extraction first.")
@@ -297,62 +327,87 @@ async def batch_translate(job_id: str):
     language = meta["language"]
 
     batches = split_into_batches(questions, batch_breaks)
-
-    try:
-        batch_job_name = batch_translator.submit_batch_job(batches, language)
-    except Exception as e:
-        raise HTTPException(500, f"Failed to submit batch job: {e}")
-
-    # Save batch job info into meta
-    meta["status"] = "batch_translating"
-    meta["batch_job_name"] = batch_job_name
+    
+    meta["translation_mode"] = mode
     meta["batch_count"] = len(batches)
-    save_json(job_id, "meta.json", meta)
 
-    return {
-        "ok": True,
-        "batch_job_name": batch_job_name,
-        "batch_count": len(batches),
-    }
+    if mode == "realtime":
+        background_tasks.add_task(_run_realtime_translation, job_id, batches, language, meta)
+        meta["status"] = "realtime_running"
+        save_json(job_id, "meta.json", meta)
+        return {"ok": True, "mode": "realtime", "batch_count": len(batches)}
+    else:
+        try:
+            batch_job_name = batch_translator.submit_batch_job(batches, language)
+        except Exception as e:
+            raise HTTPException(500, f"Failed to submit batch job: {e}")
 
+        meta["status"] = "batch_translating"
+        meta["batch_job_name"] = batch_job_name
+        save_json(job_id, "meta.json", meta)
+        return {
+            "ok": True,
+            "mode": "batch",
+            "batch_job_name": batch_job_name,
+            "batch_count": len(batches),
+        }
 
 # ═════════════════════════════════════════════════════════════════════════════
-# ROUTE 7 — Batch API: Poll batch job status
-# GET /api/batch-status/{job_id}
+# ROUTE 7 — Translation API: Poll job status
+# GET /api/translation-status/{job_id}
 # ═════════════════════════════════════════════════════════════════════════════
-@app.get("/api/batch-status/{job_id}")
-async def batch_status(job_id: str):
+@app.get("/api/translation-status/{job_id}")
+async def translation_status(job_id: str):
     meta_file = job_path(job_id, "meta.json")
     if not os.path.exists(meta_file):
         raise HTTPException(404, "Job not found.")
 
     meta = load_json(job_id, "meta.json")
-    batch_job_name = meta.get("batch_job_name")
-    if not batch_job_name:
-        raise HTTPException(400, "No batch job found for this job. Use real-time mode or submit a batch first.")
-
-    try:
-        status = batch_translator.poll_batch_status(batch_job_name)
-    except Exception as e:
-        raise HTTPException(500, f"Failed to poll batch status: {e}")
-
-    return status
+    mode = meta.get("translation_mode", "batch")
+    
+    if mode == "realtime":
+        status = meta.get("status")
+        if status == "realtime_succeeded":
+            return {"state": "JOB_STATE_SUCCEEDED", "done": True}
+        elif status == "realtime_failed":
+            return {"state": "JOB_STATE_FAILED", "done": True}
+        else:
+            return {"state": "JOB_STATE_RUNNING", "done": False}
+    else:
+        batch_job_name = meta.get("batch_job_name")
+        if not batch_job_name:
+            raise HTTPException(400, "No batch job found for this job. Use real-time mode or submit a batch first.")
+        try:
+            status = batch_translator.poll_batch_status(batch_job_name)
+        except Exception as e:
+            raise HTTPException(500, f"Failed to poll batch status: {e}")
+        return status
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# ROUTE 8 — Batch API: Collect results and build DOCX
-# POST /api/batch-collect/{job_id}
+# ROUTE 8 — Translation API: Collect results and build DOCX
+# POST /api/collect-translation/{job_id}
 # ═════════════════════════════════════════════════════════════════════════════
 def _run_collect_and_build(job_id: str, batch_job_name: str, batches: list, language: str, meta: dict):
     try:
-        batch_outputs = batch_translator.collect_batch_results(batch_job_name, batches, language)
+        mode = meta.get("translation_mode", "batch")
+        if mode == "realtime":
+            batch_outputs = load_json(job_id, "realtime_outputs.json")
+        else:
+            batch_outputs = batch_translator.collect_batch_results(batch_job_name, batches, language)
+        
+        # Load images if available
+        images = []
+        images_file = job_path(job_id, "images.json")
+        if os.path.exists(images_file):
+            images = load_json(job_id, "images.json")
         
         # Build DOCX
         original_name = os.path.splitext(meta["original_filename"])[0]
         output_filename = f"{language.lower()}_{original_name}.docx"
         output_path = job_path(job_id, output_filename)
 
-        docx_builder.build(batch_outputs, output_path, language)
+        docx_builder.build(batch_outputs, output_path, language, images=images)
 
         meta["status"] = "done"
         meta["output_filename"] = output_filename
@@ -363,15 +418,16 @@ def _run_collect_and_build(job_id: str, batch_job_name: str, batches: list, lang
         meta["error"] = str(e)
         save_json(job_id, "meta.json", meta)
 
-@app.post("/api/batch-collect/{job_id}")
-async def batch_collect(job_id: str, background_tasks: BackgroundTasks):
+@app.post("/api/collect-translation/{job_id}")
+async def collect_translation(job_id: str, background_tasks: BackgroundTasks):
     meta_file = job_path(job_id, "meta.json")
     if not os.path.exists(meta_file):
         raise HTTPException(404, "Job not found.")
 
     meta = load_json(job_id, "meta.json")
+    mode = meta.get("translation_mode", "batch")
     batch_job_name = meta.get("batch_job_name")
-    if not batch_job_name:
+    if mode == "batch" and not batch_job_name:
         raise HTTPException(400, "No batch job found for this job.")
 
     questions = load_json(job_id, "questions.json")
@@ -392,6 +448,7 @@ async def batch_collect(job_id: str, background_tasks: BackgroundTasks):
 
 @app.get("/api/collect-status/{job_id}")
 def collect_status(job_id: str):
+    
     meta_file = job_path(job_id, "meta.json")
     if not os.path.exists(meta_file):
         raise HTTPException(404, "Job not found.")
@@ -405,6 +462,7 @@ def collect_status(job_id: str):
         "status": status,
         "filename": meta.get("output_filename") if status == "done" else None
     }
+
 
 
 
@@ -447,6 +505,7 @@ async def send_email(job_id: str, request: Request):
     if os.path.exists(questions_file):
         questions = load_json(job_id, "questions.json")
         question_count = len(questions)
+    
 
     try:
         result = await asyncio.to_thread(

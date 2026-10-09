@@ -362,6 +362,18 @@ footer{text-align:center;color:var(--gray-300);font-size:12px;padding-top:24px;b
     <div class="error-banner" id="reviewErr" style="margin-bottom:12px;">
       <span id="reviewErrMsg"></span>
     </div>
+    
+    <div class="mode-toggle" style="display:flex; gap:16px; margin-bottom:16px; justify-content:center; background:var(--gray-100); padding:12px; border-radius:8px;">
+      <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:500;">
+        <input type="radio" name="transMode" value="realtime" checked style="accent-color:var(--primary);">
+        ⚡ Real-time (Fast)
+      </label>
+      <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:500; color:var(--gray-600);" title="50% cheaper but takes minutes to hours">
+        <input type="radio" name="transMode" value="batch" style="accent-color:var(--primary);">
+        ⏳ Batch (Cheaper, Slower)
+      </label>
+    </div>
+
     <button class="proceed-btn" id="btnProceed" style="width:100%;justify-content:center;padding:14px;">
       Proceed to Translation
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -521,24 +533,29 @@ $('btnProceed').addEventListener('click',async()=>{
     const data=await res.json();if(!res.ok)throw new Error(data.detail||'Failed.');
   }catch(err){showErr($('reviewErr'),$('reviewErr'),err.message);$('btnProceed').disabled=false;return;}
   const totalBatches=batch_breaks.length+1;
+  const transMode=document.querySelector('input[name="transMode"]:checked').value;
   setStep(4);$('translateLog').innerHTML='';
   setProgress($('translateFill'),$('translatePct'),$('translateTitle'),5,'Starting...');
-  addLog($('translateLog'),`Translating into ${activeLang} — ${totalBatches} batch(es)...`);
-  // ── BATCH MODE (always) ──
-  addLog($('translateLog'),'Submitting batch job...');
-  setProgress($('translateFill'),$('translatePct'),$('translateTitle'),10,'Submitting batch...');
+  addLog($('translateLog'),`Translating into ${activeLang} — ${totalBatches} batch(es) using ${transMode} mode...`);
+
+  addLog($('translateLog'),'Submitting translation job...');
+  setProgress($('translateFill'),$('translatePct'),$('translateTitle'),10,'Submitting job...');
   try{
-    const batchRes=await fetch(`${API}/api/batch-translate/${currentJobId}`,{method:'POST'});
+    const batchRes=await fetch(`${API}/api/start-translation/${currentJobId}`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({mode: transMode})
+    });
     const batchData=await batchRes.json();
-    if(!batchRes.ok)throw new Error(batchData.detail||'Failed to submit batch job.');
-    addLog($('translateLog'),`Batch job submitted (${batchData.batch_count} batch(es)). Polling for results...`);
-    setProgress($('translateFill'),$('translatePct'),$('translateTitle'),20,'Batch submitted — waiting...');
+    if(!batchRes.ok)throw new Error(batchData.detail||'Failed to submit translation job.');
+    addLog($('translateLog'),`Translation job started. Polling for results...`);
+    setProgress($('translateFill'),$('translatePct'),$('translateTitle'),20,'Job submitted — waiting...');
   }catch(err){showErr($('translateErr'),$('translateErrMsg'),err.message);return;}
 
-  // Poll for batch completion
+  // Poll for job completion
   batchPollInterval=setInterval(async()=>{
     try{
-      const statusRes=await fetch(`${API}/api/batch-status/${currentJobId}`);
+      const statusRes=await fetch(`${API}/api/translation-status/${currentJobId}`);
       const statusData=await statusRes.json();
       if(!statusRes.ok)throw new Error(statusData.detail||'Status check failed.');
 
@@ -548,15 +565,16 @@ $('btnProceed').addEventListener('click',async()=>{
       if(state==='JOB_STATE_SUCCEEDED'){
         clearInterval(batchPollInterval);
         setProgress($('translateFill'),$('translatePct'),$('translateTitle'),80,'Collecting results...');
-        addLog($('translateLog'),'Batch complete! Collecting results and building document (this may take a few minutes)...');
+        addLog($('translateLog'),'Translation complete! Collecting results and building document (this may take a few minutes)...');
 
-        const collectRes=await fetch(`${API}/api/batch-collect/${currentJobId}`,{method:'POST'});
+        const collectRes=await fetch(`${API}/api/collect-translation/${currentJobId}`,{method:'POST'});
         const collectData=await collectRes.json();
         if(!collectRes.ok)throw new Error(collectData.detail||'Failed to start collecting results.');
 
         // Start polling for collect status
         const collectPollInterval = setInterval(async () => {
           try {
+            
             const cRes = await fetch(`${API}/api/collect-status/${currentJobId}`);
             const cData = await cRes.json();
             if (!cRes.ok) throw new Error(cData.detail||'Failed to check collect status.');
@@ -585,12 +603,14 @@ $('btnProceed').addEventListener('click',async()=>{
         }, 3000); // Poll every 3 seconds
       } else if(state==='JOB_STATE_FAILED'||state==='JOB_STATE_CANCELLED'||state==='JOB_STATE_EXPIRED'){
         clearInterval(batchPollInterval);
-        throw new Error(`Batch job ended with state: ${state}`);
+        throw new Error(`Job ended with state: ${state}`);
       } else {
         // Still running — update progress
         let p=parseInt($('translatePct').textContent)||20;
-        p=Math.min(p+2,75);
-        setProgress($('translateFill'),$('translatePct'),$('translateTitle'),p,'Batch processing...');
+        let inc = transMode === 'realtime' ? 10 : 2; 
+        let maxP = transMode === 'realtime' ? 95 : 75;
+        p=Math.min(p+inc, maxP);
+        setProgress($('translateFill'),$('translatePct'),$('translateTitle'),p,'Translating...');
       }
     }catch(err){
       clearInterval(batchPollInterval);

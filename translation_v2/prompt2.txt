@@ -96,8 +96,10 @@ Unicode mathematical character
 Every mathematical expression must remain an exact character-for-character copy of the source.
 Correct:
 a² → a²
+a<sup>2</sup> → a<sup>2</sup>
 Incorrect:
 a² → a2
+a<sup>2</sup> → a2
 Translate words beside mathematical expressions only when they are explanatory text and are not assigned variables or skill-dependent data.
 Keep assigned variables such as x, y, a, b, P, and T unchanged.
 A name or ordinary word may be translated or transliterated when used as normal explanatory text. Preserve it when it functions as a variable, coded item, assigned data, or skill-dependent content.

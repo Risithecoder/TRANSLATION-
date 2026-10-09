@@ -15,12 +15,17 @@ import os
 import re
 import json
 import time
+import base64
+import zipfile
+import io
+import xml.etree.ElementTree as ET
 from google import genai
 from google.genai import types
+from pydantic import BaseModel
 
 # ── Gemini setup ─────────────────────────────────────────────────────────────
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
-MODEL = "gemini-2.5-pro"
+MODEL = "gemini-2.5-flash"
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -42,6 +47,79 @@ UNICODE_SUB = {
     'ₖ': 'k', 'ₗ': 'l', 'ₘ': 'm', 'ₙ': 'n', 'ₒ': 'o', 'ₚ': 'p', 'ᵣ': 'r', 'ₛ': 's', 'ₜ': 't', 'ᵤ': 'u',
     'ᵥ': 'v', 'ₓ': 'x'
 }
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# IMAGE EXTRACTION — Pull images from mammoth HTML before stripping tags
+# ═════════════════════════════════════════════════════════════════════════════
+
+def _map_images_from_html(html_content: str) -> tuple:
+    """
+    Extract base64-encoded images from mammoth-generated HTML and replace
+    them with [IMAGE_N] text placeholders.
+
+
+
+    Mammoth converts embedded .docx images into <img src="data:image/png;base64,...">
+    tags. This function:
+      1. Finds all such <img> tags
+      2. Extracts the binary image data (decoded from base64)
+      3. Replaces each <img> tag with a placeholder like [IMAGE_0], [IMAGE_1], ...
+      4. Returns the modified HTML and a list of image dicts
+
+    Returns:
+        (modified_html, images) where images is a list of dicts:
+        [{"index": 0, "content_type": "image/png", "data_b64": "...", "alt": ""}, ...]
+    """
+    from bs4 import BeautifulSoup
+    import copy
+
+    soup = BeautifulSoup(html_content, "html.parser")
+    images = []
+
+    for idx, img_tag in enumerate(soup.find_all("img")):
+        src = img_tag.get("src", "")
+        alt = img_tag.get("alt", "")
+
+        if src.startswith("data:"):
+            # Parse data URI: data:image/png;base64,iVBOR...
+            try:
+                header, b64_data = src.split(",", 1)
+                # header is like "data:image/png;base64"
+                content_type = header.split(":")[1].split(";")[0]  # e.g. "image/png"
+            except (ValueError, IndexError):
+                content_type = "image/png"
+                b64_data = ""
+
+            if b64_data:
+                images.append({
+                    "index": idx,
+                    "content_type": content_type,
+                    "data_b64": b64_data,
+                    "alt": alt,
+                })
+                # Replace the <img> tag with a placeholder
+                placeholder = soup.new_tag("span")
+                placeholder.string = f"[IMAGE_{idx}]"
+                img_tag.replace_with(placeholder)
+            else:
+                # Empty data — just remove the img tag
+                img_tag.decompose()
+        else:
+            # External URL or unsupported src — insert placeholder without data
+            images.append({
+                "index": idx,
+                "content_type": "image/unknown",
+                "data_b64": "",
+                "alt": alt,
+            })
+            placeholder = soup.new_tag("span")
+            placeholder.string = f"[IMAGE_{idx}]"
+            img_tag.replace_with(placeholder)
+
+    modified_html = str(soup)
+    print(f"[text_extractor] Found {len(images)} embedded image(s) in HTML")
+    return modified_html, images
 
 
 def _html_to_plain_text(html_content: str) -> str:
@@ -74,8 +152,8 @@ def _html_to_plain_text(html_content: str) -> str:
         tag.unwrap()
         
     for tag in soup.find_all('u'):
-        tag.insert_before("__")
-        tag.insert_after("__")
+        tag.insert_before("«U»")
+        tag.insert_after("«U»")
         tag.unwrap()
 
     for tag in soup.find_all('sup'):
@@ -177,7 +255,7 @@ def _split_internal_labels(text: str) -> str:
 # STEP 2: Smart Chunking — split at Answer Key boundaries
 # ═════════════════════════════════════════════════════════════════════════════
 
-def _smart_chunk(plain_text: str, max_chunk_chars: int = 30000) -> list:
+def _smart_chunk(plain_text: str, max_chunk_chars: int = 15000) -> list:
     """
     Split plain text into chunks at 'Answer Key' boundaries.
     
@@ -254,7 +332,8 @@ ABSOLUTE RULES:
 1. DO NOT OMIT, DROP, OR IGNORE ANY TEXT. Every single word from the input MUST appear in one of the extracted items.
 2. If the text contains a passage, directions, or notes before the questions, you MUST create a separate item for it.
 3. DO NOT SUMMARIZE. Copy the text exactly.
-4. PRESERVE ALL FORMATTING TAGS. If the text contains <sup>, <sub>, **, or __, you MUST keep them exactly as they appear.
+4. PRESERVE ALL FORMATTING TAGS. If the text contains <sup>, <sub>, **, or __, you MUST keep them exactly as they appear. For example, `x<sup>2</sup>` MUST remain `x<sup>2</sup>`. Do NOT remove the tags to output `x2` or `x²`.
+5. PRESERVE IMAGE PLACEHOLDERS. If the text contains placeholders like [IMAGE_0], [IMAGE_1], etc., you MUST keep them exactly as they appear in the raw_text. Do NOT remove, modify, or omit them. They represent embedded images.
 
 For each item, return a JSON object with:
 1. question_no: The question number as an integer. If it is a passage, directions, or unnumbered text, use 0.
@@ -321,6 +400,13 @@ def _sanitize_json_string(raw: str) -> str:
     return ''.join(result)
 
 
+class ExtractedQuestion(BaseModel):
+    question_no: int
+    raw_text: str
+
+class ExtractionResult(BaseModel):
+    questions: list[ExtractedQuestion]
+
 def _extract_chunk(chunk: str, chunk_idx: int, total_chunks: int,
                    max_retries: int = 3) -> list:
     """Send one chunk to Gemini and parse the response."""
@@ -333,6 +419,7 @@ def _extract_chunk(chunk: str, chunk_idx: int, total_chunks: int,
                 contents=[types.Content(role="user", parts=[types.Part.from_text(text=prompt)])],
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
+                    response_schema=ExtractionResult,
                     temperature=0.0,
                     max_output_tokens=65536,
                 )
@@ -344,11 +431,7 @@ def _extract_chunk(chunk: str, chunk_idx: int, total_chunks: int,
                     raw = raw[4:]
                 raw = raw.strip()
 
-            # Sanitize: fix unescaped newlines/control chars inside JSON strings
-            # The LLM sometimes outputs literal newlines inside JSON string values
-            # which causes "Unterminated string" errors in json.loads()
-            raw = _sanitize_json_string(raw)
-
+            # Using response_schema guarantees valid JSON, so we don't need manual sanitization.
             data = json.loads(raw)
             if isinstance(data, list):
                 qs = data
@@ -435,8 +518,10 @@ def _deduplicate(questions: list) -> list:
     unique = []
     last_q_no = 0
     for q in merged:
-            # Normalize: strip whitespace for comparison
-            norm = re.sub(r"\s+", "", q.get("raw_text", ""))
+            # Normalize: strip whitespace for comparison and include question_no to prevent dropping identically-worded questions
+            q_no_val = q.get("question_no", 0)
+            clean_text = re.sub(r'\\s+', '', q.get("raw_text", ""))
+            norm = f"{q_no_val}_{clean_text}"
             if not norm or len(norm) < 5:
                 continue
             if norm not in seen:
@@ -461,27 +546,168 @@ def _deduplicate(questions: list) -> list:
                 # ONLY if it's an actual numbered question (>0)
                 if q["question_no"] > 0:
                     raw = str(q.get("raw_text", "")).strip()
-                    if not re.match(r'^\d+\.', raw):
+                    if not re.match(r'^\d+\.(?!\d)', raw):
                         # E.g. "What is..." -> "46. What is..."
                         q["raw_text"] = f"{q['question_no']}. {raw}"
                     else:
                         # Force the prefix to exactly match the extracted/assigned question_no
-                        q["raw_text"] = re.sub(r'^\d+\.', f"{q['question_no']}.", raw, count=1)
+                        q["raw_text"] = re.sub(r'^\d+\.(?!\d)', f"{q['question_no']}.", raw, count=1)
                     
                 unique.append(q)
     return unique
 
 
 # ═════════════════════════════════════════════════════════════════════════════
+# DOCX CHART PRE-PROCESSING
+# ═════════════════════════════════════════════════════════════════════════════
+
+def _extract_chart_data(xml_bytes: bytes) -> str:
+    """Extract Categories and Values from a chart XML into a Markdown table."""
+    namespaces = {
+        'c': 'http://schemas.openxmlformats.org/drawingml/2006/chart',
+        'a': 'http://schemas.openxmlformats.org/drawingml/2006/main',
+    }
+    
+    root = ET.fromstring(xml_bytes)
+    
+    # Try to get chart title
+    title = ''
+    title_node = root.find('.//c:title//a:t', namespaces)
+    if title_node is not None and title_node.text:
+        title = title_node.text
+    
+    series_data = []
+    
+    for chart_type in root.findall('.//c:pieChart', namespaces) + root.findall('.//c:barChart', namespaces) + root.findall('.//c:lineChart', namespaces):
+        for ser in chart_type.findall('.//c:ser', namespaces):
+            tx = ser.find('.//c:tx//c:v', namespaces)
+            s_name = tx.text if tx is not None else 'Series'
+            
+            cats = []
+            cat = ser.find('.//c:cat', namespaces)
+            if cat is not None:
+                for pt in cat.findall('.//c:pt/c:v', namespaces):
+                    cats.append(pt.text)
+            
+            vals = []
+            val = ser.find('.//c:val', namespaces)
+            if val is not None:
+                for pt in val.findall('.//c:pt/c:v', namespaces):
+                    vals.append(pt.text)
+                    
+            series_data.append({'name': s_name, 'cats': cats, 'vals': vals})
+            
+    if not series_data:
+        return ""
+        
+    # Format as markdown table
+    ordered_cats = []
+    for s in series_data:
+        for c in s['cats']:
+            if c not in ordered_cats:
+                ordered_cats.append(c)
+    
+    md = []
+    if title:
+        md.append(f"**Chart: {title}**")
+    
+    headers = ["Category"] + [s['name'] for s in series_data]
+    md.append("| " + " | ".join(headers) + " |")
+    md.append("|" + "|".join(["---"] * len(headers)) + "|")
+    
+    for cat in ordered_cats:
+        row = [cat]
+        for s in series_data:
+            val = ""
+            if cat in s['cats']:
+                idx = s['cats'].index(cat)
+                if idx < len(s['vals']):
+                    val = s['vals'][idx]
+            row.append(val)
+        md.append("| " + " | ".join(row) + " |")
+        
+    return "\\n".join(md)
+
+
+def _replace_charts_in_docx(file_path: str) -> io.BytesIO:
+    """
+    Reads a docx file, finds all MS Word Charts, extracts their data, 
+    and replaces the chart's XML node with a plain text Markdown table.
+    Returns a BytesIO object of the modified docx.
+    """
+    namespaces = {
+        'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main',
+        'r': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
+        'c': 'http://schemas.openxmlformats.org/drawingml/2006/chart',
+    }
+    
+    output_docx = io.BytesIO()
+    
+    with zipfile.ZipFile(file_path, 'r') as zin:
+        with zipfile.ZipFile(output_docx, 'w') as zout:
+            
+            # Map relationship IDs to chart XML files
+            rel_map = {}
+            if 'word/_rels/document.xml.rels' in zin.namelist():
+                rels_xml = zin.read('word/_rels/document.xml.rels')
+                rels_root = ET.fromstring(rels_xml)
+                for rel in rels_root.findall('.//{http://schemas.openxmlformats.org/package/2006/relationships}Relationship'):
+                    rel_map[rel.attrib['Id']] = rel.attrib['Target']
+
+            # Extract markdown tables for each chart XML
+            chart_tables = {}
+            for f in zin.namelist():
+                if f.startswith('word/charts/chart'):
+                    try:
+                        md_table = _extract_chart_data(zin.read(f))
+                        chart_tables[f] = md_table
+                    except Exception as e:
+                        print(f"[text_extractor] Failed to extract data from {f}: {e}")
+            
+            # Process document.xml to replace drawings with chart data
+            for item in zin.infolist():
+                if item.filename == 'word/document.xml':
+                    doc_xml = zin.read(item.filename)
+                    doc_root = ET.fromstring(doc_xml)
+                    
+                    for drawing in doc_root.findall('.//w:drawing', namespaces):
+                        chart_ref = drawing.find('.//c:chart', namespaces)
+                        if chart_ref is not None:
+                            rid = chart_ref.attrib.get(f"{{{namespaces['r']}}}id")
+                            target = rel_map.get(rid)
+                            
+                            # Clean up target path (it might be e.g. "charts/chart1.xml")
+                            if target and not target.startswith("word/"):
+                                target = f"word/{target}"
+                                
+                            md_table = chart_tables.get(target)
+                            
+                            if md_table:
+                                # The parent of w:drawing is w:r. Change w:drawing directly to w:t
+                                drawing.clear()
+                                drawing.tag = f"{{{namespaces['w']}}}t"
+                                drawing.set(f"{{{namespaces['w']}}}space", "preserve")
+                                drawing.text = f"\\n\\n{md_table}\\n\\n"
+                                
+                    zout.writestr(item, ET.tostring(doc_root))
+                else:
+                    zout.writestr(item, zin.read(item.filename))
+                    
+    output_docx.seek(0)
+    return output_docx
+
+
+# ═════════════════════════════════════════════════════════════════════════════
 # PUBLIC API — main entry point
 # ═════════════════════════════════════════════════════════════════════════════
 
-def extract_questions(file_path: str) -> list:
+def extract_questions(file_path: str) -> tuple:
     """
     Extract questions from .docx or .html files.
 
     Pipeline:
     1. Convert to HTML via mammoth (for .docx) or read directly (.html)
+    1b. Extract embedded images and replace with [IMAGE_N] placeholders
     2. Pre-process HTML → clean plain text (strips tags, tables → markdown)
     3. Smart-chunk at Answer Key boundaries (never splits a question)
     4. GPT-4o-mini extracts structured questions from each chunk
@@ -493,7 +719,9 @@ def extract_questions(file_path: str) -> list:
         file_path: Path to the .docx or .html file
 
     Returns:
-        List of dicts: [{"question_no": int, "raw_text": str}, ...]
+        Tuple of (questions, images):
+          - questions: List of dicts: [{"question_no": int, "raw_text": str}, ...]
+          - images: List of dicts: [{"index": int, "content_type": str, "data_b64": str, "alt": str}, ...]
     """
     ext = os.path.splitext(file_path)[-1].lower()
 
@@ -501,8 +729,12 @@ def extract_questions(file_path: str) -> list:
     if ext == ".docx":
         import mammoth
         print(f"[text_extractor] Converting .docx → HTML via mammoth...")
-        with open(file_path, "rb") as f:
-            html_content = mammoth.convert_to_html(f, style_map="u => u").value
+        
+        # Pre-process docx to convert MS Word Charts into Markdown tables
+        print(f"[text_extractor] Pre-processing charts in .docx...")
+        processed_docx_bytes = _replace_charts_in_docx(file_path)
+        
+        html_content = mammoth.convert_to_html(processed_docx_bytes, style_map="u => u").value
     elif ext in (".html", ".htm"):
         print(f"[text_extractor] Reading HTML file...")
         with open(file_path, "r", encoding="utf-8") as f:
@@ -512,6 +744,9 @@ def extract_questions(file_path: str) -> list:
 
     if not html_content.strip():
         raise ValueError("Empty document — no content to extract.")
+
+    # Step 1b: Extract images and replace with placeholders
+    html_content, images = _map_images_from_html(html_content)
 
     # Step 2: HTML → clean plain text
     print(f"[text_extractor] Pre-processing HTML → plain text...")
@@ -560,5 +795,6 @@ def extract_questions(file_path: str) -> list:
             raise RuntimeError(f"No questions could be extracted from the document. Reason: {last_error}")
         raise RuntimeError("No questions could be extracted from the document.")
 
-    print(f"[text_extractor] ✅ Total: {len(questions)} unique question(s)")
-    return questions
+    print(f"[text_extractor] ✅ Total: {len(questions)} unique question(s), "
+          f"{len(images)} image(s) preserved")
+    return questions, images

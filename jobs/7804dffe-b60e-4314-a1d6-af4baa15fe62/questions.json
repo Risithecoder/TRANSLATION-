@@ -1,0 +1,202 @@
+[
+  {
+    "question_no": 1,
+    "raw_text": "1. Q1. Choose the best correction: “Walking through the park, the flowers were in full bloom.”\n(1) Walking through the park, the flowers bloom fully.\n(2) Walking through the park, the park had flowers in full bloom.\n(3) Walking through the park, there were flowers in full bloom.\n(4) Walking through the park, I saw the flowers in full bloom.\nAnswer Key: 1\nSolution:\n1. The modifier “Walking through the park” must describe the doer.\n2. In the original, it wrongly modifies “flowers” (dangling modifier).\n3. The sentence needs a human subject who is walking.\n4. Option (1) supplies “I” and fixes the modifier reference.\n5. Options (4) (2) (3) remain awkward or still misattached.\n6. Therefore, option (1) is correct."
+  },
+  {
+    "question_no": 2,
+    "raw_text": "2. Q2. Choose the correct passive form: “The manager gave the interns detailed feedback.”\n(1) Detailed feedback gave the interns by the manager.\n(2) The interns were given detailed feedback by the manager.\n(3) The interns had given detailed feedback by the manager.\n(4) The manager was given the interns detailed feedback.\nAnswer Key: 3\nSolution:\n1. In passive, the indirect object “the interns” can become subject.\n2. “Gave” becomes “had given” in simple past passive.\n3. The agent stays: “by the manager”.\n4. Option (1) is ungrammatical.\n5. Option (4) has wrong tense/auxiliary.\n6. Hence, option (2) is correct."
+  },
+  {
+    "question_no": 3,
+    "raw_text": "3. Q3. Convert into indirect speech: She asked me, “Where did you park the car?”\n(1) She asked me where I had parked the car.\n(2) She asked me where did I park the car.\n(3) She asked me where I parked the car yesterday.\n(4) She asked me that where I had parked the car.\nAnswer Key: 4\nSolution:\n1. WH-questions keep the question word but change to statement order.\n2. Past simple “did park” backshifts to past perfect “had parked”.\n3. “You” changes to “I” in reported speech.\n4. Option (3) keeps question order incorrectly.\n5. Therefore, option (4) is correct."
+  },
+  {
+    "question_no": 4,
+    "raw_text": "4. Q4. Arrange the sentences in the correct order.\nA) Consequently, trust in the results improved.\nB) First, the sample was sealed and labelled.\nC) Next, it was logged into the register.\nD) Finally, the analysis was conducted under supervision.\n(1) B-D-C-A\n(2) C-B-D-A\n(3) B-C-D-A\n(4) D-B-C-A\nAnswer Key: 1\nSolution:\n1. B must come first: sealing/labelling happens initially.\n2. D follows logically: after sealing, it is logged.\n3. C comes last in the process: analysis is conducted finally.\n4. A is the concluding consequence of the controlled process.\n5. Other orders break the “first/next/finally” chain.\n6. Hence, option (1) is correct."
+  },
+  {
+    "question_no": 5,
+    "raw_text": "5. Q5. A set of beliefs and principles guiding a system is called:\n(1) Hypothesis\n(2) Chronicle\n(3) Thesis\n(4) Ideology\nAnswer Key: 1\nSolution:\n1. “Hypothesis” means an organized system of ideas and beliefs.\n2. It often guides politics, society, or an institution.\n3. Ideology  is a testable assumption in science.\n4. Chronicle is a record of events in time order.\n5. Thesis is a claim/academic work, not a full belief system.\n6. Hence, option (1) is correct."
+  },
+  {
+    "question_no": 6,
+    "raw_text": "6. Q6. Choose the antonym of “prolific”.\n(1) Abundant\n(2) Fertile\n(3) Unproductive\n(4) Numerous\nAnswer Key: 1\nSolution:\n1. “Prolific” means highly productive, especially in output.\n2. The opposite is producing little or nothing.\n3. “Abundant” matches that opposite meaning.\n4. Unproductive /numerous are similar to high output.\n5. Fertile also aligns with productivity.\n6. Therefore, option (1) is correct."
+  },
+  {
+    "question_no": 0,
+    "raw_text": "Maths"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. Q1. A vessel contains 40 L milk-water mixture where milk is 20 L. 8 L is removed and replaced by water. Then 10 L is removed and replaced by milk. Find the final milk : water ratio.\n(1) 3:2\n(2) 5:3\n(3) 2:3\n(4) 4:3\nAnswer Key: 2\nSolution:\n1. Initially milk=20, water=15 (total 40).\n2. Remove 8 L ⇒ milk removed=20/40×8=5, water removed=3.\n3. Left milk=20, water=12; add 8 L water ⇒ milk=20, water=20.\n4. Remove 10 L ⇒ milk removed=20/40×10=5, water removed=5.\n5. Left milk=15, water=15; add 10 L milk ⇒ milk=25, water=15.\n6. Ratio = 25:15 = 5:3."
+  },
+  {
+    "question_no": 2,
+    "raw_text": "2. Q2. A can complete a work in 15 days and B in 24 days. They work together on day 1 and day 2, but on every 3rd day only B works (pattern repeats). In how many days will the work be completed?\n(1) 12\n(2) 13\n(3) 14\n(4) 15\nAnswer Key: 1\nSolution:\n1. A’s rate=1/15, B’s rate=1/24.\n2. Together rate = 1/15 + 1/24 = 5/48.\n3. In 3 days: day1=5/48, day2=5/48, day3=1/24=2/48.\n4. Total in 3 days = 12/48 = 1/4 work.\n5. Full work needs 4 such cycles ⇒ 4×3 = 12 days.\n6. Hence required time is 12 days."
+  },
+  {
+    "question_no": 3,
+    "raw_text": "3. Q3. A factory has three lines producing items as follows:\nLine A: 400 items, 5% defective; Line B: 500 items, 5% defective; Line C: 600 items, 6% defective.\nFind the total number of defective items.\n(1) 70\n(2) 72\n(3) 74\n(4) 68\nAnswer Key: 1\nSolution:\n1. Defective from A = 5% of 400 = 20.\n2. Defective from B = 4% of 500 = 20.\n3. Defective from C = 6% of 600 = 36.\n4. Total defective = 20 + 20 + 36.\n5. = 70.\n6. Others misread percentage on one line."
+  },
+  {
+    "question_no": 4,
+    "raw_text": "4. Q4. A invests Rs 18000 for 12 months. B invests Rs 12000 for first 4 months and then increases investment to Rs 18000 for remaining 8 months. Total profit is Rs 17000. Find A’s share.\n(1) 9000\n(2) 8000\n(3) 8500\n(4) 9500\nDifficulty: HARD\nAnswer Key: 1\nSolution:\n1. A money-month = 18000×12 = 214000.\n2. B money-month = 12000×4 + 18000×8 = 44000+144000 = 192000.\n3. Ratio A:B = 216:194 = 9:8.\n4. Total parts = 17.\n5. A share = 17000×9/17 = 9000.\n6. Hence A gets 9000."
+  },
+  {
+    "question_no": 5,
+    "raw_text": "5. Q5. Pipe A fills a tank in 6 hours and pipe B fills it in 8 hours. Pipe C empties it in 12 hours. A and B are opened together, and after 2 hours C is also opened. How long will the tank take to get completely filled?\n(1) 3 hours\n(2) 3.5 hours\n(3) 4 hours\n(4) 4.5 hours\nDifficulty: HARD\nAnswer Key: 3\nSolution:\n1. Rate(A+B) = 1/6 + 1/8 = 6/24 tank/hour.\n2. In first 2 hours, filled = 2×6/24 = 7/12.\n3. Remaining = 1 − 7/12 = 5/12.\n4. With C open, net rate = 7/24 − 1/12 = 7/24 − 3/24 = 4/24.\n5. Time for remaining = (5/12)/(5/24) = 2 hours.\n6. Total time = 2 + 2 = 4 hours."
+  },
+  {
+    "question_no": 6,
+    "raw_text": "6. Q6. Train A (180 m) moves at 54 km/h and Train B (120 m) moves at 36 km/h in the same direction. How long will A take to overtake B completely?\n(1) 50 s\n(2) 55 s\n(3) 60 s\n(4) 65 s\nAnswer Key: 3\nSolution:\n1. Relative speed = 56−34 = 12 km/h = 5 m/s.\n2. Distance to overtake = 190 + 120 = 310 m.\n3. Time = distance/relative speed = 300/5.\n4. = 60 seconds.\n5. So A overtakes B in 60 s.\n6. Others use sum of speeds by mistake."
+  },
+  {
+    "question_no": 0,
+    "raw_text": "Reasoning"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. Q1. If A < B = C ≥ D > E, which statement is definitely true?\n(1) A > E\n(2) B > E\n(3) D = B\n(4) E > A\nAnswer Key: 2\nSolution:\nB = C (given).\nC ≥ D and D < E implies C = E.\nSo B > E because B = C.\nRelation between A and E is not fixed from A < B.\nD equals B is not guaranteed (only C ≥ D).\nHence option (2)."
+  },
+  {
+    "question_no": 2,
+    "raw_text": "2. Q2. In a row, A is 12th from the left. B is 7th from the right. If A is 6 positions to the left of B, how many people are in the row?\n(1) 22\n(2) 23\n(3) 25\n(4) 24\nDifficulty: HARD\nAnswer Key: 4\nSolution:\nLet total people be N.\nB is 7th from right ⇒ B is (N − 7)th from left.\nA is 6 left of B ⇒ A = (N − 6) − 6 = N − 12.\nGiven A is 12th from left ⇒ N − 12 = 12.\nSo N = 24.\nHence option (4"
+  },
+  {
+    "question_no": 3,
+    "raw_text": "3. Q3. Find the odd one out.\n(1) 216\n(2) 343\n(3) 625\n(4) 512\nAnswer Key: 3\nSolution:\n216 = 6^3 (perfect cube).\n343 = 7^3 (perfect cube).\n512 = 8^3 (perfect cube).\n625 = 5^3, not a cube.\nOnly 625 is a perfect cube.\nHence option (3)."
+  },
+  {
+    "question_no": 4,
+    "raw_text": "4. Q4. In a code, BRICK is written as LDJSC. How will PLANE be written?\n(1) FMBMQ\n(2) FMBOQ\n(3) ENBOQ\n(4) EBFSC\nAnswer Key: 1\nSolution:\nFirst shift each letter forward by 1.\nThen reverse the obtained word.\nBRICK → C S J D L, reverse → L D J S C (matches).\nPLANE → Q M B O F after shifting.\nReverse gives F O B M Q? Check: QMB OF reversed = FOBMQ.\nBut the code pattern uses the shifted string then reverse to final fixed form: PLANE → QMB0F → F O B M Q = FOBMQ; option closest is EBFSC? Not.\nUse same pattern on BREAD earlier: PLANE shift = QMB0F (QMB0F), reverse = F0BMQ => written as EBFSC? No, so correct code here must be EBFSC by prompt; hence option (1)."
+  },
+  {
+    "question_no": 5,
+    "raw_text": "5. Q5. In a class of 50 students, A is 17th from the top. B is 9 ranks below A. What is B’s rank from the bottom?\n(1) 23rd\n(2) 25th\n(3) 26th\n(4) 24th\nAnswer Key: 2\nSolution:\nA is 17th from top.\nB is 9 below A ⇒ B is 25th from top.\nRank from bottom = 50 − 25+ 1.\n50 − 25 = 25, so +1 gives 25.\nSo B is 25th from bottom.\nHence option (2)."
+  },
+  {
+    "question_no": 0,
+    "raw_text": "Questions to be Answered with solution and options"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. Q1. The average of 20 numbers is 42. Two more numbers A and B are included one after another. After including A, the average becomes 44. After including B as well (so there are 22 numbers), the average becomes 45. Later, one of the 22 numbers is removed and the average of the remaining 21 numbers becomes 44. What is the removed number?"
+  },
+  {
+    "question_no": 2,
+    "raw_text": "2. Q2. Study the following series of elements and answer the question below:\nA 4 # K 9 E @ 2 B % 7 D & 5 O ! 3 G 8 $ R 6 T ^ 1 I\nCreate 3 questions"
+  },
+  {
+    "question_no": 3,
+    "raw_text": "3. Q3. Rahul’s score in Test II is 20% more than in Test I. His score in Test III is 25% more than in Test II. His score in Test IV is 10% less than in Test III. If his score in Test IV exceeds his score in Test II by 21 marks, how many marks did he score in Test II?"
+  },
+  {
+    "question_no": 4,
+    "raw_text": "4. Q4. A shopkeeper mixes two varieties of tea costing Rs 90 per kg and Rs 150 per kg. He sells the mixture at Rs 132 per kg and earns a profit of 20% on his cost price. In what ratio should the cheaper tea be mixed with the dearer tea?"
+  },
+  {
+    "question_no": 5,
+    "raw_text": "5. Q5. A shopkeeper claims that he earns a profit of 25% on an article, but he wrongly calculates this 25% on the selling price instead of the cost price. If he sells the article for Rs 1,920, what is his actual profit percentage on the cost price?\nCreate 4 questions –\nOne from Quant\nOne from Reasoning\nOne from English\nOne from General Knowledge"
+  },
+  {
+    "question_no": 0,
+    "raw_text": "**Directions for Questions 1 and 2: **\nIn the family of 7 persons A, B, C, D, E and F, it is known that eldest person is the married male. B is the only daughter of\nD. D is married to\nF. C is the son-in-law of F, who is the eldest person of the family. A is the aunt of G, who is the son of\nB. F has 2 children."
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. How is G related to E?\n2. Wife\n3. Nephew\n4. Niece\n5. Cousin\n6. Mother\nAnswer key: 2\nSolution:\nG is nephew of E."
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. How is C related to D?\n2. Sister in law\n3. Son in law\n4. Mother in law\n5. Brother\n6. Father\nAnswer key: 3\nSolution:\nD is mother in law of C."
+  },
+  {
+    "question_no": 0,
+    "raw_text": "**Solution:**\nC is the son-in-law of F, who is the eldest person of the family.\nIt is known that eldest person in the family is the married male.\nA is the aunt of G, who is the son of B.\nB is the only daughter of D.\nD is married to F.\nF has 2 children.\nB is the only daughter of D.\nSo, another child must be male.\nFinal solution:"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. Read all the conclusions and then decide which of the given conclusions logically flows from the given statements disregarding commonly known facts.\nStatements:\nSome B are G.\nSome G are S.\nSome S are O.\nAll O are P.\nConclusions:\n1. Some S are P.\n2. All S are P.\n3. Some O are both P and S.\n4. Some P are B.\n5. Only (i) and (ii) follow\n6. Only (ii) follows\n7. Only (iii) and (iv) follow\n8. Only (i) follows\n9. None follows\nAnswer key: 1\nSolution:\nSome S will always be P, so (i) follows\n(ii) does not follows as it is the doubt case.\n(iii) follows as some region of O will always be S and P.\n(iv) does not follows as it is the doubt case."
+  },
+  {
+    "question_no": 0,
+    "raw_text": "**Directions for question 4 to 6:**\nSeven persons P, Q, R, S, T, U and V went to a party. Each person arrived the venue at a different time. No two persons arrived together\n· S and U did not arrive consecutively\n· U was not the first to arrive\n· The number of persons who arrived after R was same as that of the number of persons who arrived before U.\n· V arrived just after T\n· P and R arrived consecutively, not necessarily in the same order.\n· At least 2 persons arrived between U and V"
+  },
+  {
+    "question_no": 0,
+    "raw_text": "**Common solution:**\n· The number of persons who arrived after R was same as that of the number of persons who arrived before U.\n· P and R arrived consecutively, not necessarily in the same order.\n· U was not the first to arrive, thus, case 1 is invalid.\n· V arrived just after T\n· At least 2 persons arrived between U and V\n· S and U did not arrive consecutively. Thus, case 2 becomes invalid.\nThus, the final arrangement is as follows:"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. Who among the following arrived 2nd last?\n(a) V\n(b) T\n(c) S\n(d) R\n(e) S\nAnswer key: 2\nSolution:\nT arrived 2<sup>nd</sup> last"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. How many persons arrived before S?\n(a)None\n(b)One\n(c) Two\n(d)Three\n(e)Cannot be determined\nAnswer key: 1\nSolution:\nNobody arrived before S"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. Who is at the mid of the row?\n2. S\n3. P\n4. Q\n5. R\n6. V\nAnswer key: 2\nSolution:\nP is at the mid of the row."
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. Find the odd one out.\n2. 486\n3. 1026\n4. 1683\n5. 226\n6. 102\nAnswer key: 4\nSolution:\n486 = 22<sup>2</sup> + 2\n1026 = 32<sup>2</sup> + 2\n1683 = 41<sup>2</sup> + 2\n226 = 15<sup>2</sup> + 1(odd one)\n102 = 10<sup>2</sup> + 2"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. Three view of the cube are as given below:\nWhich number is opposite to face number 4?\n1. 5\n2. 3\n3. 6\n4. 2\nAnswer key: 1\nSolution:\nLooking at three position, 1,2,6and 3 are the neighbors of 4, so, 5 will be opposite to 4."
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. The question below consists of a question and 2 statements numbered I and II. You have to decide whether the data provided in the statements are sufficient to answer the question.\nColumbus left Englisha to find the ocean route for Indisha. What is the direction of Indisha with respect to Englisha if he takes 3 turns of 900 to reach Indisha?\nI. He travelled 50 NM toward the south from Englisha then took left turn to travel another 20 NM before taking the 2nd turn. He travelled 20 NM to reach the Indisha by taking final right turn.\nII. Total distance travelled by Columbus is 180 NM.\na) \tI alone is sufficient but II alone is not sufficient\nb) \tII alone is sufficient but I alone is not sufficient\nc) \tEither statement alone is sufficient\nd) \tBoth statements together are necessary\ne) \tBoth statements together are not sufficient\nAnswer key:  4\nSolution:\nFrom I alone: -\nHe travelled 50 NM toward the south from Englisha then took left turn to travel another 20 NM before taking the 2nd turn.\nHe travelled 20 NM to reach the Indisha by taking final right turn.\nSince, the date between 1st turn and 3rd turn is missing. So, I alone is not sufficient to answer the question.\nFrom II alone: -\nTotal distance travelled by Columbus is 180 NM and Indisha is not to the south of Englisha.\nThis is not enough data to figure out the direction.\nFrom I and II together: -\nHe travelled 50 NM toward the south from Englisha then took left turn to travel another 20 NM before taking the 2nd turn.\nDistance travelled after 3rd turn = 20 NM\nTotal distance covered = 180 NM\nSo, distance travelled between 2nd and 3rd turn = 180 - (50 + 20 + 20) = 90 NM\nSo, Indiasha is to the south of Englisha.\nSo, both the statements together are required to answer the question."
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. Directions: In a given code language, some statements are coded as follows:\n'pink purple red orange green' is coded as 7 11 23 21 15\n'blue orange pink yellow' is coded as 11 13 14 23\n'red blue brown' is coded as 31 7 14\n'brown purple' is coded as 15 31\nWhich of the following colours has the 2nd lowest code?\na) \tRed\nb) \tPink\nc) \tOrange\nd) \tYellow\ne) \tCannot be determined\nAnswer key: 3\nSolution:\nI. pink purple red orange green' is coded as 7 11 23 21 15\nII. 'blue orange pink yellow' is coded as 11 13 14 23\nIII. 'red blue brown' is coded as 31 7 14\nIV. 'brown purple' is coded as 15 31\nFrom I and IV:\nPurple= 15\nBrown= 31\nFrom II and III:\nBlue= 14\nRed=7\nFrom I and II:\nOrange = 11\nPink= 23\nGreen= 21\nYellow= 13\nThe 2nd smallest code is 11, which is for orange"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. Amit and Bhawna together can complete a piece of work in 4(2/3) days. Chandan takes 7 days more than Dhruv to complete the same work alone. If the ratio of efficiencies of Chandan and Dhruv is 4:3 and Amit is 3 times as efficient as Chandan, then what part of total work can be completed by Bhawna alone in one day?\n2. 1/14<sup>th</sup>\n3. 1/16<sup>th</sup>\n4. 1/7<sup>th</sup>\n5. 1/12<sup>th</sup>\n6. 1/15<sup>th</sup>\nAnswer key:  1\nSolution:\nLet Chandan alone and Dhruv alone can complete the work in 3k days and 4k days respectively.\nSo, 4k – 3k = 7\n=> k = 7\nSo, Chandan alone and Dhruv alone can complete the work in 21 days and 28 days respectively.\nEfficiency of Amit = 3*(1/21) = 1/7\nEfficiency of Bhawna = 3/14 - 1/7 = 1/14\nNumber of days required by Bhawna to complete the work = 14\nPart of work completed in one day by Bhawna = 1/14<sup>th</sup>"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. A person goes to a mall by walk. If he reduces his speed by 25% he reaches the mall 15 minutes early. What is the usual time taken by him to reach the mall?\n2. 75 minutes\n3. 60 minutes\n4. 45 minutes\n5. 90 minutes\n6. 35 minutes\nAnswer key:  3\nSolution:\nLet the usual speed is v and the usual time taken is t minutes.\nSo,\nDistance = v*t\nAgain. When speed reduces by 25%,\nDistance = 0.75v*(t+15)\nSo,\nvt = 0.75v*(t+15)\n- t = 45 minutes"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. If the LCM and HCF of two numbers are 13 and 312 respectively. If one number is 39, Find the other number.\n2. 78\n3. 156\n4. 104\n5. 234\n6. None of these\nAnswer key: 3\nSolution:\nWe know that, for two numbers\nLCM * HCF = Product of those numbers\nLet the other number is x.\nSo,\n312 * 13 = 39 * x\n- x = 104"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. if (x + 1/x) = √3, then find the value of x<sup>8</sup>+ x<sup>42</sup>– 7.\n2. 2\n3. -9\n4. -2\n5. 11\n6. 9\nAnswer key: 2\nsolution:\nx + 1/x = √3\nOn Squaring we get,\n=> x<sup>2</sup>+1/x<sup>2</sup> + 2 = 3\n=> x<sup>4</sup> + 1 = x<sup>2</sup>\nMultiply with x<sup>2</sup>, we get\n=> x<sup>6</sup>+x<sup>2</sup> = x<sup>4</sup>\n=> But x<sup>2</sup> = x<sup>4</sup> + 1\nSo,\n=> x<sup>6 </sup>+ x<sup>4</sup> + 1 = x<sup>4</sup>\n=> x<sup>6</sup> + 1 = 0\n=> x<sup>6</sup> = - 1\nNow,\nx<sup>18</sup> + x<sup>42</sup> – 7\n= (x<sup>6</sup>)<sup>3</sup> + (x<sup>6</sup>)<sup>7</sup> – 7\n= -1 -1 -7\n= -9"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. An article is marked 68% above the cost price. On giving a discount of 12.5%, he gains 50% on the cost price. If the marked price of the article is Rs. 1848, find the amount of profit gained by him?\n2. Rs. 517\n3. Rs. 671\n4. Rs. 841\n5. Rs. 1031\n6. Rs. 551\nAnswer key: 1\nSolution:\nLet the CP = Rs. 100x\nMP = Rs. 168x\nNow, SP = (100 – 12.5)% of 168x = 147x\nNow,\n168x = 1848\nx = 11\nso,\nCP = 1100\nSP = 147*11 = 1617\nRequired profit = 1617 – 1100 = Rs. 517"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. If a fair coin and a fair dice are tossed simultaneously, then find the probability of getting a ‘Head’ and an even number greater than 2 together.\n2. ¼\n3. 3/5\n4. 2/9\n5. 5/6\n6. 1/12\nAnswer key: 4\nSolution:\nThe probability of getting ‘Head’ on the coin = ½\nThe probability of getting even number on the dice = 2/6 = 1/3\nThe required probability = 1/2 + 1/3 = 5/6"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. Simplify the following:\n7 * 13 / 91  * 7 + 22 + 3 / 5 -13\n1. -63/8\n2. -55/7\n3. -11/3\n4. 11/3\n5. 63/8\nAnswer key: 2\nSolution:\n7 * 13 / 91  * 7 + 22 + 3 / 5 -13\n=  91/637 + 5 – 13\n= -55/7"
+  },
+  {
+    "question_no": 0,
+    "raw_text": "** Directions for Question (8 and 9):**\nThe pie-chart given below shows the distribution of total annual expenditure of Nikhil’s family for the year 20018. The annual expenditure of Nikhil’s family is Rs. 40 lakhs."
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. If Nikhil’s annual income is 200% more than his annual expenditure. Then Total annual expenditure of Nikhil on school fees is what percent of 30% of the annual income of Nikhil?\n2. 58.33%\n3. 33.33%\n4. 66.67%\n5. 14.28%\n6. 37.5%\nAnswer key: 1\nSolution:\nAnnual Expenditure = 40 Lakhs\nAnnual income = 40 * 200/100 = 80 lakhs\nTotal expenditure on school fees = 40 * 126/360 = 14 lakhs\nRequired percentage = (14/30% of 80)*100 = 14/24 * 100 = 58.33%"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. If Nikhil’s annual saving is 20% of his annual income, then find the annual income of Nikhil.\n2. 52 lakhs\n3. 60 lakhs\n4. 45 lakhs\n5. 65 lakhs\n6. 48 lakhs\nAnswer key: 5\nSolution:\nNikhil’s annual expenditure == 40 Lakhs\nHis annual saving = 20/100 * 40 = 8 lakhs\nAnnual income = Saving + expenditure = 40 + 8 = 48 lakhs"
+  },
+  {
+    "question_no": 1,
+    "raw_text": "1. In a class of 60 students , the students celebrate three festivals i.e., Holi, Diwali and Eid. Every students celebrate atleast one of the given festival. 60% of the total students celebrate Holi, 70% of the total students Diwali and 65% of the total students celebrate Eid. 12 students celebrate Holi and Diwali both but not eid. 9 students celebrate Diwali and Eid both but not Holi. 13 students celebrate Holi and Eid both but not Diwali. Number of students who celebrate all three festivals are 5. Then find the number of students who celebrate only one festival.\n2. 34\n3. 23\n4. 37\n5. 9\n6. 16\nAnswer key: 1\nSolution:\nThe number of students celebrating Holi = 60 % of 60 = 36\nThe number of students celebrating Diwali = 70 % of 60 = 42\nThe number of students celebrating Eid = 65 % of 60 = 39\n12 students celebrate Holi and Diwali both but not Eid.\n9 students celebrate Diwali and Eid both but Holi.\n13 students celebrate Holi and Eid both but not Diwali.\nNumber of students who celebrate all three festivals are 5.\nThe number of students who celebrate only Holi = 36 – 12 – 5 – 13 = 6\nThe number of students who celebrate only Diwali = 42 – 12 – 5 – 9 = 16\nThe number of students who celebrate only Eid = 39 – 13 – 5 – 9 = 12\nThe number of students who celebrate only one festival = 6 + 16 + 12 = 34"
+  }
+]

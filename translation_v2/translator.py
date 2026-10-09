@@ -8,7 +8,7 @@ from google import genai
 from google.genai import types
 
 # ── Gemini setup ──────────────────────────────────────────────────────────────
-MODEL  = "gemini-3.1-pro-preview"
+MODEL  = "gemini-2.5-pro"
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -50,8 +50,8 @@ class TranslatedQuestion(BaseModel):
     @classmethod
     def remove_leading_number(cls, v: str) -> str:
         cleaned = v.strip()
-        # Remove leading number like "1. ", "23.", etc.
-        return re.sub(r"^\d+\.\s*", "", cleaned)
+        # Remove leading number like "1. ", "23.", etc. but not decimals like "4999.98"
+        return re.sub(r"^\d+\.(?!\d)\s*", "", cleaned)
 
     @field_validator("english_question", "translated_question")
     @classmethod
@@ -95,8 +95,8 @@ OUTPUT FORMAT: You MUST return a valid JSON object matching exactly this schema:
       "english_options": ["(1) <opt1>", "(2) <opt2>", "..."],
       "translated_options": ["(number) <trans1>", "(number) <trans2>", "..."],
       "answer_key": "<digit only, or empty string \"\" for passages>",
-      "english_solution": "<Full solution in English, or empty string \"\" for passages>",
-      "translated_solution": "<Full solution translated into {language}, or empty string \"\" for passages>"
+      "english_solution": "<Full solution explanation in English WITHOUT any 'Solution:' or 'Answer Key:' prefix, or empty string \"\" for passages>",
+      "translated_solution": "<Full solution explanation translated into {language} WITHOUT any translated 'Solution:' or 'Answer Key:' prefix like 'समाधान:' or 'उत्तर कुंजी:', or empty string \"\" for passages>"
     }
   ]
 }
@@ -111,9 +111,13 @@ ABSOLUTE RULES:
 7. DO NOT OMIT ANY TEXT. If the input contains extra sentences, context, or notes, you MUST include them in the translated output.
 8. MARKDOWN TABLES: If the input contains a Markdown table (e.g. | Col1 | Col2 |), you MUST preserve the exact Markdown table format in the output. Do NOT remove the | characters and do NOT break rows across multiple lines.
 9. NEVER create dummy, placeholder, or filler questions. Only translate questions that actually exist in the input. If fewer questions exist than expected, translate ONLY what is present — do NOT invent extra questions.
-10. PRESERVE FORMATTING: If the input contains `**bold**`, `__underline__`, `<sup>` or `<sub>` markers, you MUST preserve them exactly around the corresponding translated text. Also preserve any bullet points (`- `) or numbering (`1. `, `2. `) exactly as they appear.
+10. PRESERVE FORMATTING AND SUPERSCRIPTS: If the input contains `**bold**`, `«U»underline«U»`, `<sup>` or `<sub>` markers, you MUST preserve them EXACTLY. This is especially critical for math. For example, `m<sup>3</sup>` MUST remain `m<sup>3</sup>` in the translation. Do NOT drop the tags and output `m3` or `m³`. Keep these tags exactly around the translated text or numbers. Also preserve any bullet points (`- `) or numbering (`1. `, `2. `) exactly as they appear. The `«U»` marker denotes underlined text — keep these markers around the translated text.
 11. PRESERVE NEWLINES AND PARAGRAPHS: You MUST preserve all newlines (`\n`) and paragraph breaks from the original text. If a sentence starts on a new line (like a bullet point, a numbered item, or a section heading like 'Further Insights:'), the translated sentence MUST also start on a new line. Do NOT combine multiple lines into a single paragraph.
 12. IMPORTANT: The translated output must keep every original newline, bullet, and numbering exactly as in the source. Do NOT collapse multiple lines into a paragraph.
+13. PRESERVE IMAGE PLACEHOLDERS: If the input contains placeholders like [IMAGE_0], [IMAGE_1], etc., you MUST preserve them exactly as-is in BOTH the english and translated fields. Do NOT translate, remove, or modify these placeholders. They represent embedded images.
+14. PRESERVE FILL-IN-THE-BLANK: If the input contains a blank represented by underscores (e.g. ______ or _______), you MUST keep them exactly as-is in BOTH the english and translated fields. Do NOT fill in the blank, do NOT remove the underscores, and do NOT convert them to underlined text. The blank is intentional and must appear in the output unchanged.
+15. NO LABELS IN SOLUTION FIELDS: The `english_solution` and `translated_solution` fields must contain ONLY the solution explanation text. Do NOT include prefixes like "Solution:", "Solution -", "Answer Key:", "Answer Key -", or their translated equivalents (e.g. "समाधान:", "उत्तर कुंजी:", "పరిష్కారం:", etc.). These labels are added automatically by the system. If the input text starts with "Solution -" or "Solution:", strip that prefix before placing the text into `english_solution`. Similarly, do NOT translate "Solution" or "Answer Key" into the target language and put it inside `translated_solution`.
+16. NO QUESTION NUMBERS IN TEXT FIELDS: The `english_question` and `translated_question` fields must NOT begin with the question number (e.g. do NOT start with "2." or "**46.**"). The question number belongs ONLY in the `question_no` field. Strip the number prefix and write the question text directly without it.
 """
 
 PROMPT_TEMPLATE = """Translate the following batch of examination items into {language}.
@@ -276,8 +280,10 @@ Do not modify any:
 Every mathematical expression must remain an exact character-for-character copy of the source.
 Correct:
 a² → a²
+a<sup>2</sup> → a<sup>2</sup>
 Incorrect:
 a² → a2
+a<sup>2</sup> → a2
 Translate words beside mathematical expressions only when they are explanatory text and are not assigned variables or skill-dependent data.
 Keep assigned variables such as x, y, a, b, P, and T unchanged.
 A name or ordinary word may be translated or transliterated when used as normal explanatory text. Preserve it when it functions as a variable, coded item, assigned data, or skill-dependent content.
@@ -322,6 +328,9 @@ Do not:
 - Add notes, comments, warnings, or explanations
 Treat every field independently. For malformed, incomplete, truncated, fragmentary, or ambiguous input, process only the visible content. Preserve uncertainty rather than guessing.
 
+IMAGE PLACEHOLDERS
+If the input contains placeholders like [IMAGE_0], [IMAGE_1], etc., preserve them exactly as-is in BOTH the english and translated fields. Do NOT translate, remove, or modify these placeholders. They represent embedded images from the source document.
+
 MANDATORY JSON OUTPUT FORMAT:
 You MUST return a JSON object with a "questions" array. Each element must have ALL of these keys:
   - question_no (integer — 0 if passage)
@@ -332,8 +341,8 @@ You MUST return a JSON object with a "questions" array. Each element must have A
   - english_options (array of strings for all options, or [] for passages/notes)
   - translated_options (array of strings for all options, or [] for passages/notes)
   - answer_key (string digit, or "" for passages/notes)
-  - english_solution (string, or "" for passages/notes)
-  - translated_solution (string, or "" for passages/notes)
+  - english_solution (string, solution explanation only — no "Solution:" or "Answer Key:" prefix, or "" for passages/notes)
+  - translated_solution (string, translated solution explanation only — no translated labels like "समाधान:" or "उत्तर कुंजी:", or "" for passages/notes)
 
 Ensure that for each element:
 1. `english_question` and `english_options` contain the EXACT original content.
@@ -366,10 +375,13 @@ Rules reminder:
 - "questions" must be a non-empty array.
 - Each question must have ALL keys: question_no, english_question, translated_question, english_options (array of all options), translated_options (array of all options), answer_key (digit only), english_solution (non-empty), translated_solution (non-empty).
 - translated_solution MUST contain the actual translated explanation text — it must NOT be empty.
+- NO LABELS IN SOLUTION FIELDS: Do NOT include "Solution:", "Answer Key:", or their translated equivalents (e.g. "समाधान:", "उत्तर कुंजी:") inside english_solution or translated_solution. Only the explanation text belongs there.
 - NEVER create dummy, placeholder, or filler questions. Only translate questions that actually exist in the original text.
 - If the original block has fewer questions than expected, translate ONLY what exists — do NOT invent extra questions.
-- PRESERVE FORMATTING: You must preserve `**bold**`, `__underline__`, `<sup>`, and `<sub>` markers exactly as they appear in the original text. Also preserve any bullet points (`- `) or numbering (`1. `, `2. `) exactly.
-- PRESERVE NEWLINES AND PARAGRAPHS: You MUST preserve all newlines (`\n`) and paragraph breaks from the original text. Do NOT combine multiple lines into a single paragraph."""
+- PRESERVE FORMATTING: You must preserve `**bold**`, `«U»underline«U»`, `<sup>`, and `<sub>` markers exactly as they appear in the original text. For example, `m<sup>2</sup>` MUST remain `m<sup>2</sup>`. Do NOT drop the `<sup>` tags and output `m2`. Also preserve any bullet points (`- `) or numbering (`1. `, `2. `) exactly. The `«U»` marker denotes underlined text — keep these markers around the translated text.
+- PRESERVE NEWLINES AND PARAGRAPHS: You MUST preserve all newlines (`\n`) and paragraph breaks from the original text. Do NOT combine multiple lines into a single paragraph.
+- PRESERVE IMAGE PLACEHOLDERS: Keep [IMAGE_0], [IMAGE_1], etc. exactly as-is. Do NOT remove or translate them.
+- PRESERVE FILL-IN-THE-BLANK: If the input contains blanks represented by underscores (e.g. ______ or _______), keep them exactly as-is. Do NOT fill in the blank, do NOT remove the underscores, and do NOT convert them to underlined text. The blank must appear in the translated text in the same position."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════

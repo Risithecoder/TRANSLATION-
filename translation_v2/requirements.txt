@@ -7,4 +7,5 @@ python-dotenv
 beautifulsoup4
 mammoth
 pdf2image
-openai
+openaimatplotlib
+matplotlib

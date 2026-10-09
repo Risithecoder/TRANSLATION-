@@ -12,6 +12,8 @@ Features:
 
 import os
 import re
+import io
+import base64
 from docx import Document
 from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -19,12 +21,56 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
 
-            
+
+# Maximum image width in the document (inches) — prevents overflow
+_MAX_IMAGE_WIDTH = Inches(5.5)
+
+
+def _insert_image(doc, image_data: dict):
+    """
+    Insert an image into the document from base64-encoded binary data.
+    
+    Args:
+        doc: The python-docx Document object
+        image_data: Dict with keys: data_b64, content_type, alt
+    """
+    b64 = image_data.get("data_b64", "")
+    if not b64:
+        # No image data — insert a placeholder text instead
+        _add_line(doc, f"[Image: {image_data.get('alt', 'unavailable')}]", 
+                  size=10, italic=True, color=RGBColor(0x99, 0x99, 0x99))
+        return
+    
+    try:
+        image_bytes = base64.b64decode(b64)
+        image_stream = io.BytesIO(image_bytes)
+        
+        # Determine file extension from content_type
+        content_type = image_data.get("content_type", "image/png")
+        # python-docx can handle png, jpeg, gif, bmp, tiff etc via Pillow
+        
+        # Add image with width constraint (preserves aspect ratio)
+        doc.add_picture(image_stream, width=_MAX_IMAGE_WIDTH)
+        
+        # Center the image paragraph
+        last_paragraph = doc.paragraphs[-1]
+        last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        last_paragraph.paragraph_format.space_before = Pt(4)
+        last_paragraph.paragraph_format.space_after = Pt(4)
+        
+    except Exception as e:
+        print(f"[docx_builder] ⚠️ Failed to insert image: {e}")
+        _add_line(doc, f"[Image could not be rendered]", 
+                  size=10, italic=True, color=RGBColor(0x99, 0x99, 0x99))
 
 
 def _add_formatted_runs(p, text, size=11, bold=False, italic=False, color=None):
-    """Parse **bold**, __underline__, <sup>, and <sub> and add appropriately formatted runs."""
-    tokens = re.split(r'(\*\*|__|<sup>|</sup>|<sub>|</sub>)', text)
+    """Parse **bold**, «U»underline«U», <sup>, and <sub> and add appropriately formatted runs.
+    
+    Underline uses «U» markers (not __) to avoid collision with fill-in-the-blank
+    underscore sequences (e.g. ______ ).
+    """
+    tokens = re.split(r'(\*\*|«U»|<sup>|</sup>|<sub>|</sub>)', text)
     is_bold = bold
     is_underline = False
     is_sup = False
@@ -35,7 +81,7 @@ def _add_formatted_runs(p, text, size=11, bold=False, italic=False, color=None):
             continue
         if token == '**':
             is_bold = not is_bold
-        elif token == '__':
+        elif token == '«U»':
             is_underline = not is_underline
         elif token == '<sup>':
             is_sup = True
@@ -79,7 +125,7 @@ def _is_table_row(line: str) -> bool:
 def _is_separator_row(line: str) -> bool:
     """Check if line is a markdown table separator: |---|---|"""
     return bool(re.match(r'^\s*\|[-:\s|]+\|\s*$', line))
-
+ 
 
 def _parse_table_row(line: str) -> list:
     """Parse a markdown table row into a list of cell strings."""
@@ -147,8 +193,8 @@ def _add_markdown_table(doc, table_lines: list):
             _set_cell_border(cell)
 
 
-def _render_text_block(doc, text: str, size=11, bold=False, italic=False, color=None, space_before=2, space_after=2, indent=False):
-    """Render a block of text that might contain markdown tables."""
+def _render_text_block(doc, text: str, size=11, bold=False, italic=False, color=None, space_before=2, space_after=2, indent=False, images=None):
+    """Render a block of text that might contain markdown tables or image placeholders."""
     if not text:
         return
     lines = text.split('\n')
@@ -159,7 +205,7 @@ def _render_text_block(doc, text: str, size=11, bold=False, italic=False, color=
             i += 1
             continue
             
-        # ── Markdown table block ─────────────────────────────────
+        # ── Markdown table block ─────────────────────────────────────────
         if _is_table_row(line):
             table_lines = []
             while i < len(lines) and (_is_table_row(lines[i].strip()) or _is_separator_row(lines[i].strip())):
@@ -168,11 +214,38 @@ def _render_text_block(doc, text: str, size=11, bold=False, italic=False, color=
             _add_markdown_table(doc, table_lines)
             doc.add_paragraph()  # spacing after table
             continue
+        
+        # ── Check for image placeholders in the line ─────────────────
+        if images and re.search(r'\[IMAGE_\d+\]', line):
+            # Split line around image placeholders
+            parts = re.split(r'(\[IMAGE_\d+\])', line)
+            for part in parts:
+                part = part.strip()
+                if not part:
+                    continue
+                img_match = re.match(r'\[IMAGE_(\d+)\]', part)
+                if img_match:
+                    img_idx = int(img_match.group(1))
+                    # Find the image data by index
+                    img_data = None
+                    for img in images:
+                        if img.get("index") == img_idx:
+                            img_data = img
+                            break
+                    if img_data:
+                        _insert_image(doc, img_data)
+                    else:
+                        # Image data not found — skip placeholder silently
+                        pass
+                else:
+                    _add_line(doc, part, size=size, bold=bold, italic=italic, color=color,
+                              space_before=space_before, space_after=space_after, indent=indent)
+            i += 1
+            continue
             
         _add_line(doc, line, size=size, bold=bold, italic=italic, color=color, 
                   space_before=space_before, space_after=space_after, indent=indent)
         i += 1
-
 
 
     
@@ -190,7 +263,7 @@ def _renumber_options(options: list, start: int) -> list:
     return result
 
 
-def build(batch_outputs: list, output_path: str, language: str):
+def build(batch_outputs: list, output_path: str, language: str, images: list = None):
     """
     Build a formatted .docx file from structured batch translation outputs.
 
@@ -198,6 +271,8 @@ def build(batch_outputs: list, output_path: str, language: str):
         batch_outputs (list): List of structured batch dicts (from Pydantic dump).
         output_path (str): Full path to save the output .docx file.
         language (str): Target language name.
+        images (list): Optional list of image dicts from text_extractor.
+                       Each dict has: index, content_type, data_b64, alt.
     """
     doc = Document()
 
@@ -221,31 +296,33 @@ def build(batch_outputs: list, output_path: str, language: str):
             eq = str(q.get('english_question', '')).strip()
             q_no = str(q.get('question_no', ''))
             
-            # Enforce question number prefix if it's a real question (not 0 or empty)
+            # Strip any leading "N." or "N. " prefix the AI may have included,
+            # then re-apply the authoritative question_no cleanly.
             if q_no and q_no != "0":
-                if not re.match(r'^\d+\.', eq):
-                    eq = f"{q_no}. {eq}"
-                else:
-                    eq = re.sub(r'^\d+\.', f"{q_no}.", eq, count=1)
+                # Remove ALL consecutive leading numbers, even if wrapped in bold markers (e.g. "**3. **")
+                eq = re.sub(r'^((?:\*+)?\s*\d+[\.\)](?!\d)\s*(?:\*+)?\s*)+', '', eq).strip()
+                eq = f"{q_no}. {eq}"
                 
-            _render_text_block(doc, eq, size=11, bold=False, space_before=16, space_after=4)
+            _render_text_block(doc, eq, size=11, bold=False, space_before=16, space_after=4, images=images)
             
             # 2. Language label
             _add_line(doc, f"{language}:", size=11, bold=False, italic=False, 
                       space_before=6, space_after=2)
             
-            # 3. Translated Question
-            _render_text_block(doc, str(q.get('translated_question', '')), size=11)
+            # 3. Translated Question — strip any leading question number the AI may have added
+            tq = str(q.get('translated_question', '')).strip()
+            tq = re.sub(r'^\d+[\.\)](?!\d)\s*', '', tq).strip()
+            _render_text_block(doc, tq, size=11, images=images)
             
             # 4. English Options — force (1)-(4)
             eng_opts = _renumber_options(q.get('english_options', []), 1)
             for opt in eng_opts:
-                _render_text_block(doc, str(opt), size=11, space_before=1, space_after=1, indent=False)
+                _render_text_block(doc, str(opt), size=11, space_before=1, space_after=1, indent=False, images=images)
                 
             # 5. Translated Options — force (5)-(8)
             trans_opts = _renumber_options(q.get('translated_options', []), len(eng_opts) + 1)
             for opt in trans_opts:
-                _render_text_block(doc, str(opt), size=11, space_before=1, space_after=1, indent=False)
+                _render_text_block(doc, str(opt), size=11, space_before=1, space_after=1, indent=False, images=images)
                 
             # 6. Answer Key
             if q.get('answer_key'):
@@ -256,13 +333,13 @@ def build(batch_outputs: list, output_path: str, language: str):
             if q.get('english_solution'):
                 _add_line(doc, "Solution:", size=11, bold=False, 
                           space_before=8, space_after=2)
-                _render_text_block(doc, str(q.get('english_solution', '')), size=11)
+                _render_text_block(doc, str(q.get('english_solution', '')), size=11, images=images)
             
             # 8. Translated Solution
             if q.get('translated_solution'):
                 _add_line(doc, f"{language}:", size=11, bold=False, italic=False, 
                           space_before=6, space_after=2)
-                _render_text_block(doc, str(q.get('translated_solution', '')), size=11)
+                _render_text_block(doc, str(q.get('translated_solution', '')), size=11, images=images)
 
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     doc.save(output_path)
