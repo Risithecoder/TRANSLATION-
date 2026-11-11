@@ -40,6 +40,7 @@ import mammoth
 with open('test_math_2_replaced.docx', 'rb') as f:
     result = mammoth.convert_to_html(f)
     print("HTML with placeholders:", result.value)
+    
 
 # 3. Re-insert math into a new docx
 doc3 = Document()

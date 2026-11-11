@@ -8,7 +8,7 @@ from google import genai
 from google.genai import types
 
 # ── Gemini setup ──────────────────────────────────────────────────────────────
-MODEL  = "gemini-2.5-pro"
+MODEL  = "gemini-3.7-flash"
 
 
 # ═════════════════════════════════════════════════════════════════════════════
